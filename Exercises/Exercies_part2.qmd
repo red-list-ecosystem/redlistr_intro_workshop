@@ -1,0 +1,213 @@
+---
+title: "redlistr_exercises"
+author: "Aniko B. Toth"
+format: html
+editor: visual
+---
+
+## Lesson 3 : Area of Occupancy (30 minutes)
+
+For subcriterion B2, we will need to calculate the number of grid cells occupied by our species or ecosystem. For species, the grid cell size is 2km x 2km and for ecosystems the cell size is 10km x 10km. The `getAOO()` function uses a random grid search to find the optimal grid with the fewest cells.
+
+Demo
+
+Let's do a demo with our raster dataset.
+
+```{r Creating AOO grid, fig.width=7, fig.height=7, eval = FALSE}
+
+# getAOO() function 
+AOO.grid <- getAOO(mangrove.2017)
+
+```
+
+The function returns a special class of object called an AOOgrid. This object has some handy built-in methods to summarise and plot your results:
+
+```{r}
+# summary
+summary(Aoo.grid)
+
+# handy plotting function
+plot(AOO.grid)
+```
+
+You can also pull out individual components of the object, if you want to use them individually:
+
+```{r}
+
+# Extract the output grid (for example, to include in a different plot)
+grid <- AOO.grid@grid
+
+# Get the number of grid cells as an integer
+AOO <- aAOO.grid@AOO 
+```
+
+You can run some diagnostics on the results to get a sense for whether you ran enough random trials to get the optimal grid.
+
+```{r Getting number of AOO grids, eval = FALSE}
+
+# jplot
+jplot(AOO.grid)
+
+# histogram of values generated with each rep
+hist(AOO.grid@AOOvals)
+
+```
+
+The `getAOO()` function has sensible defaults that are readily customisable. Here is a list of arguments that can be modified:
+
+-   grid.size : change to 2000 for species data (default is 10km x 10km)
+
+-   names_from : argument to enter the name of the column containing species or ecosystem labels. Relevant for point or polygon data containing multiple species or ecosystems. If nothing is entered, the function assumes all inputs are part of the same assessment unit.
+
+-   bottom.1pct.rule : turn the bottom 1% rule on or off (defaults to TRUE)
+
+-   percent : change the percent that is cut (defaults to 1%)
+
+-   jitter : turn random iterations on or off, e.g., if you need a quick estimate you can turn it off (defaults to TRUE = on)
+
+-   n_jitter : how many random iterations are desired? (defaults to 35)
+
+My diagnostics indicated that the default number of random iterations may have been insufficient. I want to run my `getAOO` again but with a larger number of iterations to get the best possible results.
+
+```{r}
+
+# increase the number of iterations
+AOO.grid <- getAOO(mangrove.2017, n_jitter = 150)
+```
+
+### Exercises:
+
+1.  Calculate the AOO of our species point dataset, plot it and run diagnostics. Does the default number of 35 random iterations seem to converge to the optimal grid?
+
+```{r}
+    # your code here
+
+
+```
+
+2.  Calculate the AOO of our polygon dataset, then summarise and plot the results. Create a new plot that includes a map of Australia in the background. #TODO
+
+```{r}
+# your code here
+
+
+```
+
+3.  Calculate AOO for our raster dataset, but turn off the bottom 1% rule. Compare the results for AOO with and without the rule.
+
+```{r}
+# your code here
+
+```
+
+4.  Modfiy your code to apply the bottom 1% rule, but dropping the bottom 5%. Compare your results to exercise 3.
+
+```{r}
+# your code here
+
+```
+
+5.  Apply the AOO function to your own data and run diagnostics. Do your results agree with any previous assessments? Why or why not?
+
+```{r}
+# your code here
+
+```
+
+6.  Use XXX polygon dataset containing multiples species/ecosystems to run AOO. How does the format of the output differ? How would you print summaries, create plots, or run diagnostics for this type of output?
+
+```{r}
+# your code here
+
+```
+
+## Lesson 4 : Calculating rates of change (45 minutes)
+
+Criterion A of the Red List of Ecosystems and Criteria A-C of the Red List of Threatened Species all deal with calculating rates of change, often with very few observations to support the calculations. In many cases, all we have are two measurements of area or population from several years apart. In this section we will cover some basic strategies for making estimates of change over time.
+
+### I have two time slices
+
+For ecosystems or species ranges, we first calculate area of our measurements through time.
+
+```{r Calculate area of rasters}
+a.2000 <- getArea(mangrove.2000)
+a.2017 <- getArea(mangrove.2017)
+
+# you can also calculate areas for both layers at once by combining them into a raster stack:
+
+a <- getArea(c(mangrove.2000, mangrove.2017))
+```
+
+Typically we will want to know the difference in the areas or populations we calculated in the previous step.
+
+```{r}
+# The getAreaChange function can accept rasters or polygons. 
+
+area.change <- getAreaChange(mangrove.2000, mangrove.2017)
+
+# It can also accept the area tables calculated in the previous step, but the column containing an ecosystem identity value must be specified. 
+
+area.change <- getAreaChange(a.2000, a.2017, value) 
+```
+
+In the Red List of Ecosystems, two methods are suggested to determine the rate of decline of an ecosystem, each of which assumes a different functional form of the decline ([Bland et al., 2024](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf)). The proportional rate of decline (PRD) is a fraction of the previous year's remaining area, while the absolute rate of decline (ARD) is a constant fraction of the area of the ecosystem at the beginning of the decline ([Bland et al., 2024](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf)). These rates of decline allow the use of two or more data points to extrapolate to the full 50 year timeframe required in an assessment.
+
+The annual rate of change (ARC) uses a compound interest law to determine the instantaneous rate of change ([Puyravaud 2003](https://www.sciencedirect.com/science/article/pii/S0378112702003353)).
+
+To estimate the rate of changing using these methods, we use the `getDeclineStats` function.
+
+```{r Using getDeclineStats}
+decline.stats <- getDeclineStats(a.2000$area, a.2017$area, 2000, 2017, 
+                                 methods = c('ARD', 'PRD', 'ARC'))
+decline.stats
+```
+
+Extrapolate to appropriate time frame.
+
+```{r Estimating future area}
+extrapolated.area <- futureAreaEstimate(a.2000$area, year.t1 = 2000, 
+                                        ARD = decline.stats$ARD, 
+                                        PRD = decline.stats$PRD, 
+                                        ARC = decline.stats$ARC, 
+                                        nYears = 50)
+extrapolated.area
+
+```
+
+### Exercises:
+
+1.  Repeat the calculations of area/rates of change on an example polygon dataset.
+
+    ```{r}
+
+    #your code here
+    ```
+
+2.  Extrapolate -- are three decline modes in agreement?
+
+    ```{r}
+
+    #your code here
+    ```
+
+3.  Calculate the estimated rate of change in the population of XXX using PRD and extrapolate to XX years.
+
+    ```{r}
+
+    #your code here
+    ```
+
+4.  Use a dataset you brought today to estimate the rate of change and the percent change in area/population over a time frame that is relevant to your ecosystem or organism.
+
+    ```{r}
+
+    #your code here
+    ```
+
+### I have a time series (3 or more measurements)
+
+Areas
+
+Trend fitting.
+
+Extrapolation

@@ -1,0 +1,334 @@
+---
+title: "Workshop: Introduction to 'redlistr'" # Title shown at the top of the rendered workshop page
+editor: visual # Prefer Quarto's visual editor mode in supported editors
+---
+
+## Overview
+
+A beginner workshop for using the `{redlistr}` package in **R** to calculate key spatial metrics used in the **IUCN Red List of Ecosystems** workflow from ecosystem distribution rasters.
+
+1.  Introduction to R, RStudio, and Quarto
+
+2.  Setting up the environment and loading packages
+
+3.  Getting the data
+
+4.  Area calculation
+
+5.  Extent of Occurrence (EOO)
+
+6.  Area of Occupancy (AOO)
+
+7.  Rate of change
+
+## 1. Introduction to R, Rstudio and Quarto
+
+Before starting, install:
+
+-   R
+-   RStudio
+-   Quarto (optional, but useful for workshop documents like this one)
+
+You will also need a folder for your workshop data. In this workshop we will use one main workspace folder and keep the processing files inside it.
+
+``` text
+Workshop_redlistr/
+├── Workshop.qmd
+```
+
+## 2. Setting up environment and loading packages
+
+### Install Packages
+
+Run this once on your computer if the packages are not already installed:
+
+```{r}
+#| eval: false
+# Install the packages needed for this workshop.
+# Run this only once on your computer, not every session.
+install.packages(c(
+  "terra",           # raster handling
+  "leaflet",         # interactive maps
+  "redlistr"         # Red List of Ecosystems helper functions
+))
+```
+
+### Load Packages
+
+Run this each session:
+
+```{r Loading packages, message=FALSE}
+# Load packages
+library(terra) # work with raster data
+library(leaflet) # build interactive maps
+library(redlistr) # Red List of Ecosystems calculations
+```
+
+## Set Your Workspace
+
+The easiest habit for beginners is to create one object called `Workspace` and build all file paths from it.
+
+```{r}
+# We will keep your default directory for workshop use today and assign it as our workspace
+Workspace <- getwd()
+
+# Create the local workspace folder if it does not exist yet
+dir.create(Workspace, recursive = TRUE, showWarnings = FALSE)
+```
+
+## 3. Get Data
+
+Here we use the mangrove rasters bundled inside `{redlistr}`.
+
+```{r Loading our example distributions}
+# Read the example mangrove raster for year 2000 from the redlistr package.
+mangrove.2000 <- rast(
+  system.file("extdata", "example_distribution_2000.tif", package = "redlistr")
+)
+
+# Read the example mangrove raster for year 2017 from the redlistr package.
+mangrove.2017 <- rast(
+  system.file("extdata", "example_distribution_2017.tif", package = "redlistr")
+)
+```
+
+`system.file()` points to files bundled inside the package.
+
+When using your own data, replace this with a full file path, for example:\`rast("C:/mydata/mangroves_2000.tif")\`
+
+### Alternative formats
+
+See vignette [Ecosystem distribution data in raster and vector format](redlistr-raster-vector.html) for instruction on how to read ecosystem distribution data in other formats.
+
+### Visualise both years together
+
+This first check is important for beginners. Before doing any calculations, inspect what the rasters look like.
+
+```{r Plotting the two rasters, fig.show='hold', fig.width=7, fig.height=7, fig.alt='Overlay of two mangrove distribution maps'}
+plot(
+  mangrove.2000,        # Base layer: mangrove distribution in year 2000
+  col = "grey30",       # Grey colour for 2000 presence
+  legend = FALSE,       # Remove legend for cleaner overlay
+  main = "Mangrove Distribution"  # Plot title
+)
+
+plot(
+  mangrove.2017,        # Overlay layer: mangrove distribution in 2017
+  add = TRUE,           # Add on top of existing plot (do not create new plot)
+  col = "darkorange",   # Orange colour for 2017 presence
+  legend = FALSE        # Keep legend off for clarity
+)
+# Overlap = stable areas, non-overlap = change (gain/loss)
+```
+
+\`add = TRUE\` overlays the 2017 map on top of the 2000 map.
+
+-   **Grey** = 2000
+
+-   **Orange** = 2017
+
+### Data preparation checks for our calculations
+
+Second step is also **critical before any calculations**.
+
+The {redlistr} functions require distances in **metres**, not degrees.
+
+Your rasters must:
+
+-   be in a **projected CRS** rather than geographic longitude/latitude
+
+-   use the **same CRS**
+
+Before doing any calculations, always check the Coordinate Reference System (CRS).
+
+**Definition:** CRS (Coordinate Reference System) defines how spatial data are positioned on the Earth (e.g., latitude/longitude or projected metres).
+
+**Definition:** Projected CRS represents data in metres (or feet), which is required for accurate area and distance calculations.
+
+### Check CRS of **both** rasters
+
+```{r}
+# Print CRS of 2000 raster
+crs(mangrove.2000)
+
+# Print CRS of 2017 raster
+crs(mangrove.2017)
+```
+
+### Explore rasters on the interactive map for content and comparison
+
+For web maps, rasters need to be in **WGS84** (`EPSG:4326`).
+
+```{r}
+# Reproject rasters to WGS84 (EPSG:4326) for Leaflet compatibility
+m2000 <- project(mangrove.2000, "EPSG:4326")   # Convert 2000 raster to lat/long
+m2017 <- project(mangrove.2017, "EPSG:4326")   # Convert 2017 raster to lat/long
+
+leaflet() |>
+  addProviderTiles("CartoDB.Positron") |>   # Add a light basemap for context
+  
+  addRasterImage(
+    m2000,                                  # Add 2000 mangrove layer
+    colors = function(x) ifelse(is.na(x), NA, "grey30"), # Grey for presence
+    opacity = 0.7,                          # Semi-transparent for overlay
+    group = "Mangrove 2000"                 # Layer name for toggle control
+  ) |>
+  
+  addRasterImage(
+    m2017,                                  # Add 2017 mangrove layer
+    colors = function(x) ifelse(is.na(x), NA, "darkorange"), # Orange for presence
+    opacity = 0.7,                          # Same transparency for comparison
+    group = "Mangrove 2017"                 # Layer name for toggle control
+  ) |>
+  
+  addLayersControl(
+    overlayGroups = c("Mangrove 2000", "Mangrove 2017"), # Toggle between years
+    options = layersControlOptions(collapsed = FALSE)    # Keep control panel open
+  )
+# Toggle layers to visually compare change in mangrove distribution between years
+```
+
+### Check if data are in longitude/latitude (degrees)
+
+```{r}
+# TRUE = geographic (degrees), FALSE = projected (metres)
+is.lonlat(mangrove.2000)
+is.lonlat(mangrove.2017)
+```
+
+If `is.lonlat()` returns TRUE, your data are in degrees (longitude/latitude).
+
+You must reproject them before continuing.
+
+```{r}
+# Example only: choose a projected CRS suitable for your study area
+# mangrove.2000 <- project(mangrove.2000, "EPSG:32754")
+# mangrove.2017 <- project(mangrove.2017, "EPSG:32754")
+```
+
+### Compare CRS between layers
+
+```{r}
+# Check if both rasters use the same CRS
+crs(mangrove.2000) == crs(mangrove.2017)
+```
+
+## 4. **Ecosystem** Area Calculation **(Criterion A)**
+
+This step asks: **How big is the ecosystem at each time point?**
+
+Area is calculated by counting raster cells classified as the ecosystem and multiplying by cell size.
+
+Results are returned in **km²**.
+
+```{r}
+# Calculate area for each raster value in the 2000 layer.
+# This is useful for binary rasters because it separates absence and presence values.
+a.2000 <- getArea(mangrove.2000, byValue = TRUE)
+
+# Calculate area for each raster value in the 2017 layer.
+a.2017 <- getArea(mangrove.2017, byValue = TRUE)
+
+# Print the full area tables.
+a.2000
+a.2017
+# Value = raster class (e.g., 1 = mangrove presence)
+# Area = total area (km²) for each class
+```
+
+\# Value = raster class (e.g., 1 = mangrove presence)
+
+\# Area = total area in km² for each class
+
+```{r}
+
+# Combine multiple rasters and calculate their area in one step.
+# Here we pass both 2000 and 2017 layers together.
+a.both <- getArea(c(mangrove.2000, mangrove.2017), byValue = TRUE)
+
+# Print the combined result.
+a.both
+#if needed a combined area
+#sum(a$area)
+```
+
+getArea() also works on raster stacks with multiple ecosystem layers.
+
+This is useful when scaling up to many ecosystems, regions, or time points.
+
+## 5. **Calculate extent of occurrence --- EOO (Criterion B1)**
+
+EOO is the **minimum convex polygon** around all occurrences.
+
+It is **not** the same as actual ecosystem area.
+
+Instead, it is a standardised spatial metric used to assess vulnerability to broad-scale threatening events.
+
+```{r}
+# Create the minimum convex polygon around all ecosystem presence cells in 2017.
+# In the current redlistr package, the function name is makeEOO().
+EOO.polygon <- makeEOO(mangrove.2017)
+
+# Print a summary of the EOO object.
+summary(EOO.polygon)
+
+# Plot the 2017 raster first so the EOO polygon has spatial context.
+plot(mangrove.2017, col = "lightgrey", legend = FALSE, main = "EOO for mangrove distribution in 2017")
+
+# Add the EOO polygon on top of the raster.
+plot(EOO.polygon, add = TRUE, border = "red", lwd = 2, col = NA)
+
+# Extract the EOO area, usually returned in square kilometres.
+EOO.area <- getAreaEOO(EOO.polygon)
+
+# Print the EOO area.
+EOO.area
+```
+
+**⚠️ Important technical notes**
+
+EOO and AOO should be calculated using standard methods only.
+
+Non-standard approaches cannot be compared directly against IUCN thresholds.
+
+**CRS mismatch pitfalls**
+
+-   {terra} → projected CRS (good for area)
+
+-   {leaflet} → requires **EPSG:4326**
+
+-   So you maintain **two versions**:
+
+    -   projected → analysis
+
+    -   WGS84 → visualisation
+
+### Summary
+
+```         
+Raw raster → CRS check → Projection (UTM) → Area (Criterion A)
+                                          → EOO (Criterion B)
+
+                           ↓
+                   Reproject to WGS84
+                           ↓
+                  Interactive visualisation (Leaflet)
+```
+
+## 6. Placeholder for later workshop steps
+
+We are focusing on **EOO only** in this version of the workshop.
+
+You can add the following sections later if needed:
+
+-   **AOO (Area of Occupancy)**
+
+-   **Rate of change**
+
+-   **Time series assessment**
+
+## AOO
+
+## Rate of change
+
+## Time Series
