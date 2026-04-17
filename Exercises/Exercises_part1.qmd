@@ -9,7 +9,7 @@ A beginner workshop for using the `{redlistr}` package in **R** to calculate
 
 1.  Introduction to R, RStudio, and Quarto
 
-2.  Setting up the environment and loading packages
+2.  Setting up the environment
 
 3.  Getting the data
 
@@ -29,14 +29,9 @@ Before starting, install:
 -   RStudio
 -   Quarto (optional, but useful for workshop documents like this one)
 
-You will also need a folder for your workshop data. In this workshop we will use one main workspace folder and keep the processing files inside it.
+We want to keep all of our files in one folder. Download a copy of the [GitHub repository](https://github.com/red-list-ecosystem/redlistr_intro_workshop.git) (use the green Code button at the top right), and save it in a convenient place on your computer. The repository will be your main workspace for this workshop. Open the workshop in Rstudio using the `redlistr_intro_workshop.Rproj` file. This will automatically set your working directory to the repository folder.
 
-``` text
-Workshop_redlistr/
-├── Workshop.qmd
-```
-
-## 2. Setting up environment and loading packages
+## 2. Setting up environment
 
 ### Install Packages
 
@@ -47,10 +42,17 @@ Run this once on your computer if the packages are not already installed:
 # Install the packages needed for this workshop.
 # Run this only once on your computer, not every session.
 install.packages(c(
+  "sf",              # shapefile handling
   "terra",           # raster handling
   "leaflet",         # interactive maps
   "redlistr"         # Red List of Ecosystems helper functions
 ))
+
+### TODO: If we don't publish to CRAN, we will need: 
+install.packages("remotes")
+remotes::install_github("red-list-ecosystem/redlistr_intro_workshop")
+# if at this point you are prompted to update packages, enter 1 to update ALL and click "yes" in the popup window.
+
 ```
 
 ### Load Packages
@@ -59,21 +61,10 @@ Run this each session:
 
 ```{r Loading packages, message=FALSE}
 # Load packages
+library(sf) # work with point, line, and polygon data
 library(terra) # work with raster data
 library(leaflet) # build interactive maps
 library(redlistr) # Red List of Ecosystems calculations
-```
-
-## Set Your Workspace
-
-The easiest habit for beginners is to create one object called `Workspace` and build all file paths from it.
-
-```{r}
-# We will keep your default directory for workshop use today and assign it as our workspace
-Workspace <- getwd()
-
-# Create the local workspace folder if it does not exist yet
-dir.create(Workspace, recursive = TRUE, showWarnings = FALSE)
 ```
 
 ## 3. Get Data
@@ -127,35 +118,9 @@ plot(
 
 -   **Orange** = 2017
 
-### Data preparation checks for our calculations
+Therefore, areas that show up in grey are those where mangrove distribution has been lost between 2000 and 2017.
 
-Second step is also **critical before any calculations**.
-
-The {redlistr} functions require distances in **metres**, not degrees.
-
-Your rasters must:
-
--   be in a **projected CRS** rather than geographic longitude/latitude
-
--   use the **same CRS**
-
-Before doing any calculations, always check the Coordinate Reference System (CRS).
-
-**Definition:** CRS (Coordinate Reference System) defines how spatial data are positioned on the Earth (e.g., latitude/longitude or projected metres).
-
-**Definition:** Projected CRS represents data in metres (or feet), which is required for accurate area and distance calculations.
-
-### Check CRS of **both** rasters
-
-```{r}
-# Print CRS of 2000 raster
-crs(mangrove.2000)
-
-# Print CRS of 2017 raster
-crs(mangrove.2017)
-```
-
-### Explore rasters on the interactive map for content and comparison
+### Explore rasters on an interactive map for content and comparison (optional)
 
 For web maps, rasters need to be in **WGS84** (`EPSG:4326`).
 
@@ -188,6 +153,34 @@ leaflet() |>
 # Toggle layers to visually compare change in mangrove distribution between years
 ```
 
+### Data preparation checks for our calculations
+
+It is critical to perform two checks **before any calculations**.
+
+The {redlistr} functions require distances in **metres**, not degrees.
+
+Your data must:
+
+-   be in a **projected CRS** rather than geographic longitude/latitude
+
+-   use the **same CRS**
+
+Before doing any calculations, always check the Coordinate Reference System (CRS). The package will check this internally and throw an error if datasets are provided with geographic coordinates.
+
+**Definition:** CRS (Coordinate Reference System) defines how spatial data are positioned on the Earth (e.g., latitude/longitude -- geodesic coordinate systems that model a round surface or projected coordinate systems where coordinates are projected onto a flat surface).
+
+**Definition:** Projected CRS represents data in metres (or feet), which is required for accurate area and distance calculations, as degrees can represent different distances depending on latitude.
+
+### Check CRS of **both** rasters
+
+```{r}
+# Print CRS of 2000 raster
+st_crs(mangrove.2000)
+
+# Print CRS of 2017 raster
+st_crs(mangrove.2017)
+```
+
 ### Check if data are in longitude/latitude (degrees)
 
 ```{r}
@@ -198,7 +191,7 @@ is.lonlat(mangrove.2017)
 
 If `is.lonlat()` returns TRUE, your data are in degrees (longitude/latitude).
 
-You must reproject them before continuing.
+You must reproject them before continuing. We will not cover selecting an appropriate CRS in this workshop, but external resources for this step are available.
 
 ```{r}
 # Example only: choose a projected CRS suitable for your study area
