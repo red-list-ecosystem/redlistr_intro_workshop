@@ -7,21 +7,25 @@ editor: visual # Prefer Quarto's visual editor mode in supported editors
 
 A beginner workshop for using the `{redlistr}` package in **R** to calculate key spatial metrics used in the **IUCN Red List of Ecosystems** workflow from ecosystem distribution rasters.
 
-1.  Introduction to R, RStudio, and Quarto
+**Lesson 1: Setup**
 
-2.  Setting up the environment
+a.  Introduction to R, RStudio, and Quarto
 
-3.  Getting the data
+b.  Setting up the environment
 
-4.  Area calculation
+c.  Importing data
 
-5.  Extent of Occurrence (EOO)
+d.  Visualising data
 
-6.  Area of Occupancy (AOO)
+**Lesson 2: Extent of Occurrence (EOO)**
 
-7.  Rate of change
+**Lesson 3: Area of Occupancy (AOO)**
 
-## 1. Introduction to R, Rstudio and Quarto
+**Lesson 4: Calculating Area and Rate of change**
+
+## Lesson 1. Setup
+
+### a. Introduction to R, Rstudio and Quarto
 
 Before starting, install:
 
@@ -31,9 +35,9 @@ Before starting, install:
 
 We want to keep all of our files in one folder. Download a copy of the [GitHub repository](https://github.com/red-list-ecosystem/redlistr_intro_workshop.git) (use the green Code button at the top right), and save it in a convenient place on your computer. The repository will be your main workspace for this workshop. Open the workshop in Rstudio using the `redlistr_intro_workshop.Rproj` file. This will automatically set your working directory to the repository folder.
 
-## 2. Setting up environment
+### b. Setting up environment
 
-### Install Packages
+#### Install Packages
 
 Run this once on your computer if the packages are not already installed:
 
@@ -55,7 +59,7 @@ remotes::install_github("red-list-ecosystem/redlistr_intro_workshop")
 
 ```
 
-### Load Packages
+#### Load Packages
 
 Run this each session:
 
@@ -67,7 +71,7 @@ library(leaflet) # build interactive maps
 library(redlistr) # Red List of Ecosystems calculations
 ```
 
-## 3. Get Data
+### c. Importing Data
 
 Here we use the mangrove rasters bundled inside `{redlistr}`.
 
@@ -85,13 +89,15 @@ mangrove.2017 <- rast(
 
 `system.file()` points to files bundled inside the package.
 
-When using your own data, replace this with a full file path, for example:\`rast("C:/mydata/mangroves_2000.tif")\`
+`rast()` specifies that the file is to be read in as a raster file.
 
-### Alternative formats
+When using your own raster data, replace this with a full file path, for example:\`rast("C:/mydata/mangroves_2000.tif")\`
+
+#### Alternative formats
 
 See vignette [Ecosystem distribution data in raster and vector format](redlistr-raster-vector.html) for instruction on how to read ecosystem distribution data in other formats.
 
-### Visualise both years together
+### d. Visualising data
 
 This first check is important for beginners. Before doing any calculations, inspect what the rasters look like.
 
@@ -120,7 +126,7 @@ plot(
 
 Therefore, areas that show up in grey are those where mangrove distribution has been lost between 2000 and 2017.
 
-### Explore rasters on an interactive map for content and comparison (optional)
+#### Explore rasters on an interactive map for content and comparison (optional)
 
 For web maps, rasters need to be in **WGS84** (`EPSG:4326`).
 
@@ -153,7 +159,7 @@ leaflet() |>
 # Toggle layers to visually compare change in mangrove distribution between years
 ```
 
-### Data preparation checks for our calculations
+#### Data preparation checks for our calculations
 
 It is critical to perform two checks **before any calculations**.
 
@@ -171,7 +177,9 @@ Before doing any calculations, always check the Coordinate Reference System (CRS
 
 **Definition:** Projected CRS represents data in metres (or feet), which is required for accurate area and distance calculations, as degrees can represent different distances depending on latitude.
 
-### Check CRS of **both** rasters
+Note: For Red List assessments, it is best to choose a CRS that compromises between accurate areas, distances, and bearings. For smaller extents, the exact CRS will not affect the results, but for analyses covering larger, regional areas, we might like to test if different projections yield different results.
+
+#### Check CRS of **both** rasters
 
 ```{r}
 # Print CRS of 2000 raster
@@ -181,7 +189,7 @@ st_crs(mangrove.2000)
 st_crs(mangrove.2017)
 ```
 
-### Check if data are in longitude/latitude (degrees)
+#### Check if data are in longitude/latitude (degrees)
 
 ```{r}
 # TRUE = geographic (degrees), FALSE = projected (metres)
@@ -199,57 +207,40 @@ You must reproject them before continuing. We will not cover selecting an approp
 # mangrove.2017 <- project(mangrove.2017, "EPSG:32754")
 ```
 
-### Compare CRS between layers
+#### Compare CRS between layers
 
 ```{r}
 # Check if both rasters use the same CRS
 crs(mangrove.2000) == crs(mangrove.2017)
 ```
 
-## 4. **Ecosystem** Area Calculation **(Criterion A)**
+### Exercises:
 
-This step asks: **How big is the ecosystem at each time point?**
-
-Area is calculated by counting raster cells classified as the ecosystem and multiplying by cell size.
-
-Results are returned in **km²**.
+1.  In the Data folder of this workshop, you will find a polygon dataset called XXX. Import the data using the function `st_read()` from the sf package, used for polygon and point data. Use the help tab to access the function's documentation for correct usage.
 
 ```{r}
-# Calculate area for each raster value in the 2000 layer.
-# This is useful for binary rasters because it separates absence and presence values.
-a.2000 <- getArea(mangrove.2000, byValue = TRUE)
-
-# Calculate area for each raster value in the 2017 layer.
-a.2017 <- getArea(mangrove.2017, byValue = TRUE)
-
-# Print the full area tables.
-a.2000
-a.2017
-# Value = raster class (e.g., 1 = mangrove presence)
-# Area = total area (km²) for each class
+# your code here  
 ```
 
-\# Value = raster class (e.g., 1 = mangrove presence)
-
-\# Area = total area in km² for each class
+2.  Create a plot of the dataset. Note that when plotting polygon data, you must ask the plot function to focus on its geometry using the function `st_geometry()`. What happens to the plot if you don't do this?
 
 ```{r}
-
-# Combine multiple rasters and calculate their area in one step.
-# Here we pass both 2000 and 2017 layers together.
-a.both <- getArea(c(mangrove.2000, mangrove.2017), byValue = TRUE)
-
-# Print the combined result.
-a.both
-#if needed a combined area
-#sum(a$area)
+# your code here  
 ```
 
-getArea() also works on raster stacks with multiple ecosystem layers.
+3.  Determine the coordinate reference system (CRS) of the polygon dataset. Is it a geodesic or projected coordinate system? If it's geodesic, project it into an appropriate projected coordinate system for analysis.
 
-This is useful when scaling up to many ecosystems, regions, or time points.
+```{r}
+# your code here 
+```
 
-## 5. **Calculate extent of occurrence --- EOO (Criterion B1)**
+4.  Select a dataset from your own work and import it. Create a plot and determine the CRS.
+
+```{r}
+# your code here
+```
+
+## Lesson 2: **Calculate extent of occurrence --- EOO (Criterion B1)**
 
 EOO is the **minimum convex polygon** around all occurrences.
 
@@ -259,23 +250,32 @@ Instead, it is a standardised spatial metric used to assess vulnerability to bro
 
 ```{r}
 # Create the minimum convex polygon around all ecosystem presence cells in 2017.
-# In the current redlistr package, the function name is makeEOO().
-EOO.polygon <- makeEOO(mangrove.2017)
+# In the current redlistr package, the function name is getEOO().
+EOO <- getEOO(mangrove.2017)
+
+```
+
+The `getEOO()` function outputs a special object containing information about the EOO analysis. It contains "slots" for the EOO polygon, its area, the units, and the input data used to derive the polygon. The package contains handy default functions for generating summaries and plots of its special functions.
+
+```{r}
 
 # Print a summary of the EOO object.
-summary(EOO.polygon)
+summary(EOO)
 
-# Plot the 2017 raster first so the EOO polygon has spatial context.
-plot(mangrove.2017, col = "lightgrey", legend = FALSE, main = "EOO for mangrove distribution in 2017")
-
-# Add the EOO polygon on top of the raster.
-plot(EOO.polygon, add = TRUE, border = "red", lwd = 2, col = NA)
+# The inbuilt plot function for EOO outputs includes both the input data and the output polygon. 
+plot(EOO)
 
 # Extract the EOO area, usually returned in square kilometres.
-EOO.area <- getAreaEOO(EOO.polygon)
+EOO.area <- getAreaEOO(EOO)
+
+# Alternatively, you can access any slot directly using the @ operator: 
+EOO.area <- EOO@area
 
 # Print the EOO area.
 EOO.area
+
+# You can always use the str() function to get an overview of the contents of an object, for instance if you don't know what the slots are named:
+str(EOO)
 ```
 
 **⚠️ Important technical notes**
@@ -308,20 +308,29 @@ Raw raster → CRS check → Projection (UTM) → Area (Criterion A)
                   Interactive visualisation (Leaflet)
 ```
 
-## 6. Placeholder for later workshop steps
+### Exercises:
 
-We are focusing on **EOO only** in this version of the workshop.
+1.  Generate the EOO object for mangrove.2000.
 
-You can add the following sections later if needed:
+```{r}
+# your code here  
+```
 
--   **AOO (Area of Occupancy)**
+2.  View the summary and plot of the EOO object. What is the EOO area? Did it increase or decrease between 2000 and 2017?
 
--   **Rate of change**
+```{r}
+# your code here  
+```
 
--   **Time series assessment**
+3.  Repeat exercises 1 and 2 for the polygon dataset we loaded earlier.
 
-## AOO
+```{r}
+# your code here 
+```
 
-## Rate of change
+4. Repeat exercises 1 and 2 for a dataset of your own. 
 
-## Time Series
+```{r}
+# your code here
+```
+

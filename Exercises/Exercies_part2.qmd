@@ -129,11 +129,16 @@ Criterion A of the Red List of Ecosystems and Criteria A-C of the Red List of Th
 
 For ecosystems or species ranges, we first calculate area of our measurements through time.
 
+Area is calculated by counting raster cells classified as the ecosystem and multiplying by cell size.
+
+Results are returned in **km²**.
+
 ```{r Calculate area of rasters}
 a.2000 <- getArea(mangrove.2000)
 a.2017 <- getArea(mangrove.2017)
 
-# you can also calculate areas for both layers at once by combining them into a raster stack:
+# Combine multiple rasters and calculate their area in one step.
+# Here we pass both 2000 and 2017 layers together.
 
 a <- getArea(c(mangrove.2000, mangrove.2017))
 ```
