@@ -1,17 +1,17 @@
 ---
-title: "redlistr_exercises"
+title: "Workshop: Introduction to redlistr Part 2"
 author: "Aniko B. Toth"
 format: html
 editor: visual
 ---
 
-## Lesson 3 : Area of Occupancy (30 minutes)
+## Lesson 3 : Area of Occupancy --- AOO (Criterion B2)
 
 For subcriterion B2, we will need to calculate the number of grid cells occupied by our species or ecosystem. For species, the grid cell size is 2km x 2km and for ecosystems the cell size is 10km x 10km. The `getAOO()` function uses a random grid search to find the optimal grid with the fewest cells.
 
 Demo
 
-Let's do a demo with our raster dataset.
+Let's do a demo with our mangrove raster dataset.
 
 ```{r Creating AOO grid, fig.width=7, fig.height=7, eval = FALSE}
 
@@ -20,17 +20,17 @@ AOO.grid <- getAOO(mangrove.2017)
 
 ```
 
-The function returns a special class of object called an AOOgrid. This object has some handy built-in methods to summarise and plot your results:
+The function returns a special class of object called an AOOgrid. This object, just like EOO, has some handy built-in methods to summarise and plot your results:
 
 ```{r}
 # summary
-summary(Aoo.grid)
+summary(AOO.grid)
 
 # handy plotting function
 plot(AOO.grid)
 ```
 
-You can also pull out individual components of the object, if you want to use them individually:
+You can also pull out individual components of the object using the \@ operator if you want to use them individually:
 
 ```{r}
 
@@ -38,7 +38,7 @@ You can also pull out individual components of the object, if you want to use th
 grid <- AOO.grid@grid
 
 # Get the number of grid cells as an integer
-AOO <- aAOO.grid@AOO 
+AOO <- AOO.grid@AOO 
 ```
 
 You can run some diagnostics on the results to get a sense for whether you ran enough random trials to get the optimal grid.
@@ -55,9 +55,9 @@ hist(AOO.grid@AOOvals)
 
 The `getAOO()` function has sensible defaults that are readily customisable. Here is a list of arguments that can be modified:
 
--   grid.size : change to 2000 for species data (default is 10km x 10km)
+-   grid.size : change to 2000 for species data (default is 10,000m x 10,000m)
 
--   names_from : argument to enter the name of the column containing species or ecosystem labels. Relevant for point or polygon data containing multiple species or ecosystems. If nothing is entered, the function assumes all inputs are part of the same assessment unit.
+-   names_from : argument to enter the name of the column containing species or ecosystem labels. Relevant for point or polygon data containing multiple species or ecosystems. If nothing is entered, the function assumes all inputs are part of the same assessment unit. Raster data are automatically analysed by raster value.
 
 -   bottom.1pct.rule : turn the bottom 1% rule on or off (defaults to TRUE)
 
@@ -73,6 +73,35 @@ My diagnostics indicated that the default number of random iterations may have b
 
 # increase the number of iterations
 AOO.grid <- getAOO(mangrove.2017, n_jitter = 150)
+
+# Run diagnostics again.
+# jplot
+jplot(AOO.grid)
+
+# histogram of values generated with each rep
+hist(AOO.grid@AOOvals)
+```
+
+### Multiple units
+
+To demonstrate how to handle datasets containing multiple assessment units, let's look back at our plant species occurrence dataset.
+
+```{r}
+plot(plant_species[,"species"])
+
+# specify the column separating units using names_from
+# specify the grid size, usually 2kmx2km for species data
+# Turn off the bottom 1% rule -- not relevant for species data
+# Force random grid search for all units/species
+plant_species_AOO <- getAOO(plant_species, names_from = "species", grid.size = 2000, bottom.1pct.rule = F, jitter = T, n_jitter = 100)
+
+#install.packages("purrr")
+library(purrr)
+
+# the map and walk functions apply a specified operation to each element of a list one by one.
+walk(plant_species_AOO, summary)
+walk(plant_species_AOO, plot)
+
 ```
 
 ### Exercises:
@@ -155,7 +184,7 @@ area.change <- getAreaChange(mangrove.2000, mangrove.2017)
 area.change <- getAreaChange(a.2000, a.2017, value) 
 ```
 
-In the Red List of Ecosystems, two methods are suggested to determine the rate of decline of an ecosystem, each of which assumes a different functional form of the decline ([Bland et al., 2024](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf)). The proportional rate of decline (PRD) is a fraction of the previous year's remaining area, while the absolute rate of decline (ARD) is a constant fraction of the area of the ecosystem at the beginning of the decline ([Bland et al., 2024](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf)). These rates of decline allow the use of two or more data points to extrapolate to the full 50 year timeframe required in an assessment.
+In the Red List of Ecosystems, two methods are suggested to determine the rate of decline of an ecosystem, each of which assumes a different functional form of the decline ([IUCN, 2024](https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf)). The proportional rate of decline (PRD) is a fraction of the previous year's remaining area, while the absolute rate of decline (ARD) is a constant fraction of the area of the ecosystem at the beginning of the decline ([IUCN, 2024](https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf)). These rates of decline allow the use of two or more data points to extrapolate to the full 50 year timeframe required in an assessment.
 
 The annual rate of change (ARC) uses a compound interest law to determine the instantaneous rate of change ([Puyravaud 2003](https://www.sciencedirect.com/science/article/pii/S0378112702003353)).
 
@@ -202,7 +231,7 @@ extrapolated.area
     #your code here
     ```
 
-4.  Use a dataset you brought today to estimate the rate of change and the percent change in area/population over a time frame that is relevant to your ecosystem or organism.
+4.  Use a dataset of your own to estimate the rate of change and the percent change in area/population over a time frame that is relevant to your ecosystem or species.
 
     ```{r}
 

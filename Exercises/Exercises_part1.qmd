@@ -1,11 +1,11 @@
 ---
-title: "Workshop: Introduction to 'redlistr'" # Title shown at the top of the rendered workshop page
+title: "Workshop: Introduction to 'redlistr' Part 1" # Title shown at the top of the rendered workshop page
 editor: visual # Prefer Quarto's visual editor mode in supported editors
 ---
 
 ## Overview
 
-A beginner workshop for using the `{redlistr}` package in **R** to calculate key spatial metrics used in the **IUCN Red List of Ecosystems** workflow from ecosystem distribution rasters.
+A beginner workshop for using the `{redlistr}` package in **R** to calculate key spatial metrics used in the **IUCN Red Lists of Ecosystems and Species** workflow from ecosystem distribution rasters.
 
 **Lesson 1: Setup**
 
@@ -54,7 +54,7 @@ install.packages(c(
 
 ### TODO: If we don't publish to CRAN, we will need: 
 install.packages("remotes")
-remotes::install_github("red-list-ecosystem/redlistr_intro_workshop")
+remotes::install_github("red-list-ecosystem/redlistr")
 # if at this point you are prompted to update packages, enter 1 to update ALL and click "yes" in the popup window.
 
 ```
@@ -93,9 +93,36 @@ mangrove.2017 <- rast(
 
 When using your own raster data, replace this with a full file path, for example:\`rast("C:/mydata/mangroves_2000.tif")\`
 
-#### Alternative formats
+#### Species point data.
 
-See vignette [Ecosystem distribution data in raster and vector format](redlistr-raster-vector.html) for instruction on how to read ecosystem distribution data in other formats.
+Let's do one more example to address the import of point data (e.g., species occurrences). We will use this dataset later to demonstrate calculations with multiple assessment units at once.
+
+```{r}
+#Load the "Plant_species_points.csv" dataset from the Data folder in the work directory.
+plant_species <- read.csv("./Data/plant_species_points.csv") |> 
+
+  # convert the table into a spatial points object by specifying the column names containing coordinates
+  st_as_sf(coords = c("Longitude", "Latitude")) |>
+  
+  # specify the Coordinate system the data was provided in
+    st_set_crs(4283) 
+
+
+# Look at the resulting spatial points dataset
+plant_species
+```
+
+**⚠️ New R skill**
+
+You will notice we have used the special operator `|>` in the code above. This is called a "pipe" and allows you to enter instructions sequentially, without saving intermediate products. A pipe takes the product of the code before it and inserts it into the first argument slot of the function after it. So, the code below has the same effect, but is much messier!
+
+```{r}
+
+intermediate1 <- st_as_sf(read.csv("./Data/plant_species_points.csv"), coords = c("Longitude", "Latitude"))
+intermediate2 <- st_set_crs(intermediate1, 4283)
+plant_species <- st_transform(intermediate2, 3577)
+
+```
 
 ### d. Visualising data
 
@@ -195,16 +222,22 @@ st_crs(mangrove.2017)
 # TRUE = geographic (degrees), FALSE = projected (metres)
 is.lonlat(mangrove.2000)
 is.lonlat(mangrove.2017)
+
+is.lonlat(plant_species)
 ```
 
 If `is.lonlat()` returns TRUE, your data are in degrees (longitude/latitude).
 
-You must reproject them before continuing. We will not cover selecting an appropriate CRS in this workshop, but external resources for this step are available.
+You must reproject them before continuing. We will not cover selecting an appropriate CRS in this workshop, but external resources for this step are available. The `rast` package contains the `project()` function for reprojecting rasters, while the `sf` function `st_transform()` is used for points, lines, or polygons. Note the differing notation for specifying the CRS.
 
 ```{r}
-# Example only: choose a projected CRS suitable for your study area
+# Example: choose a projected CRS suitable for your study area
 # mangrove.2000 <- project(mangrove.2000, "EPSG:32754")
 # mangrove.2017 <- project(mangrove.2017, "EPSG:32754")
+
+# transform points to a projected CRS (UTM)
+plant_species <- st_transform(plant_species, 3577)
+  
 ```
 
 #### Compare CRS between layers
@@ -216,13 +249,13 @@ crs(mangrove.2000) == crs(mangrove.2017)
 
 ### Exercises:
 
-1.  In the Data folder of this workshop, you will find a polygon dataset called XXX. Import the data using the function `st_read()` from the sf package, used for polygon and point data. Use the help tab to access the function's documentation for correct usage.
+1.  In the Data folder of this workshop, you will find a polygon dataset called XXX. Import the data using the function `st_read()` from the sf package, used for polygon and point data. Use the help tab to access the function's documentation for correct usage. Note that for shape files, you will need to enter both the name of the folder ("dsn") and the name of the layer ("layer"), and the layer name must match across all the files of the layer.
 
 ```{r}
 # your code here  
 ```
 
-2.  Create a plot of the dataset. Note that when plotting polygon data, you must ask the plot function to focus on its geometry using the function `st_geometry()`. What happens to the plot if you don't do this?
+2.  Create a plot of the polygon dataset. Note that when plotting polygon data, you must ask the plot function to focus on its geometry using the function `st_geometry()`. What happens to the plot if you don't do this?
 
 ```{r}
 # your code here  
@@ -240,7 +273,7 @@ crs(mangrove.2000) == crs(mangrove.2017)
 # your code here
 ```
 
-## Lesson 2: **Calculate extent of occurrence --- EOO (Criterion B1)**
+## Lesson 2: **Extent of occurrence --- EOO (Criterion B1)**
 
 EOO is the **minimum convex polygon** around all occurrences.
 
@@ -328,9 +361,8 @@ Raw raster → CRS check → Projection (UTM) → Area (Criterion A)
 # your code here 
 ```
 
-4. Repeat exercises 1 and 2 for a dataset of your own. 
+4.  Repeat exercises 1 and 2 for a dataset of your own.
 
 ```{r}
 # your code here
 ```
-
