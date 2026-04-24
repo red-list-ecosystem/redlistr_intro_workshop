@@ -20,9 +20,12 @@ AOO.grid <- getAOO(mangrove.2017)
 
 ```
 
-The function returns a special class of object called an AOOgrid. This object, just like EOO, has some handy built-in methods to summarise and plot your results:
+The function returns a special class of object called an AOOgrid. This object has "slots" for the name of the assessment unit, the best AOO grid, the number of cells in the grid, the parameters used to generate the results, the input data, and the AOO results from any random iterations. Just like EOO, it has some handy built-in methods to summarise and plot your results:
 
 ```{r}
+# have a look at the slots
+str(AOO.grid)
+
 # summary
 summary(AOO.grid)
 
@@ -30,7 +33,7 @@ summary(AOO.grid)
 plot(AOO.grid)
 ```
 
-You can also pull out individual components of the object using the \@ operator if you want to use them individually:
+You can also pull out individual components of the object using the \@ operator if you want to use them individually (for example, to include in a different plot):
 
 ```{r}
 
@@ -45,17 +48,17 @@ You can run some diagnostics on the results to get a sense for whether you ran e
 
 ```{r Getting number of AOO grids, eval = FALSE}
 
-# jplot
-jplot(AOO.grid)
+# jplot: we are looking for the last decrease to occur early
+jplot(AOO.grid) 
 
-# histogram of values generated with each rep
-hist(AOO.grid@AOOvals)
+# histogram of values generated with each rep: should look like a bell curve if enough iterations were run. More iterations may produce better results if the left side of the bell curve is missing.
+hist(AOO.grid) 
 
 ```
 
 The `getAOO()` function has sensible defaults that are readily customisable. Here is a list of arguments that can be modified:
 
--   grid.size : change to 2000 for species data (default is 10,000m x 10,000m)
+-   cell_size : change to 2000 for species data (default is 10,000m x 10,000m)
 
 -   names_from : argument to enter the name of the column containing species or ecosystem labels. Relevant for point or polygon data containing multiple species or ecosystems. If nothing is entered, the function assumes all inputs are part of the same assessment unit. Raster data are automatically analysed by raster value.
 
@@ -79,7 +82,7 @@ AOO.grid <- getAOO(mangrove.2017, n_jitter = 150)
 jplot(AOO.grid)
 
 # histogram of values generated with each rep
-hist(AOO.grid@AOOvals)
+hist(AOO.grid)
 ```
 
 ### Multiple units

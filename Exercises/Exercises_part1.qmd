@@ -73,6 +73,8 @@ library(redlistr) # Red List of Ecosystems calculations
 
 ### c. Importing Data
 
+#### Raster data
+
 Here we use the mangrove rasters bundled inside `{redlistr}`.
 
 ```{r Loading our example distributions}
@@ -99,7 +101,7 @@ Let's do one more example to address the import of point data (e.g., species occ
 
 ```{r}
 #Load the "Plant_species_points.csv" dataset from the Data folder in the work directory.
-plant_species <- read.csv("./Data/plant_species_points.csv") |> 
+plant_species <- read.csv("../Data/Plant_species_points.csv") |> 
 
   # convert the table into a spatial points object by specifying the column names containing coordinates
   st_as_sf(coords = c("Longitude", "Latitude")) |>
@@ -126,7 +128,7 @@ plant_species <- st_transform(intermediate2, 3577)
 
 ### d. Visualising data
 
-This first check is important for beginners. Before doing any calculations, inspect what the rasters look like.
+Before doing any calculations, inspect what the rasters look like.
 
 ```{r Plotting the two rasters, fig.show='hold', fig.width=7, fig.height=7, fig.alt='Overlay of two mangrove distribution maps'}
 plot(
@@ -196,7 +198,7 @@ Your data must:
 
 -   be in a **projected CRS** rather than geographic longitude/latitude
 
--   use the **same CRS**
+-   use the **same CRS** if comparing multiple times
 
 Before doing any calculations, always check the Coordinate Reference System (CRS). The package will check this internally and throw an error if datasets are provided with geographic coordinates.
 
@@ -220,13 +222,15 @@ st_crs(mangrove.2017)
 
 ```{r}
 # TRUE = geographic (degrees), FALSE = projected (metres)
+# terra function for rasters
 is.lonlat(mangrove.2000)
 is.lonlat(mangrove.2017)
 
-is.lonlat(plant_species)
+# sf function for shapefiles
+st_is_longlat(plant_species)
 ```
 
-If `is.lonlat()` returns TRUE, your data are in degrees (longitude/latitude).
+If `is.lonlat()` or `st_is_longlat()` returns TRUE, your data are in degrees (longitude/latitude).
 
 You must reproject them before continuing. We will not cover selecting an appropriate CRS in this workshop, but external resources for this step are available. The `rast` package contains the `project()` function for reprojecting rasters, while the `sf` function `st_transform()` is used for points, lines, or polygons. Note the differing notation for specifying the CRS.
 
@@ -249,7 +253,7 @@ crs(mangrove.2000) == crs(mangrove.2017)
 
 ### Exercises:
 
-1.  In the Data folder of this workshop, you will find a polygon dataset called XXX. Import the data using the function `st_read()` from the sf package, used for polygon and point data. Use the help tab to access the function's documentation for correct usage. Note that for shape files, you will need to enter both the name of the folder ("dsn") and the name of the layer ("layer"), and the layer name must match across all the files of the layer.
+1.  In the Data folder of this workshop, you will find a polygon dataset called XXX. Import the data using the function `st_read()` from the sf package, used for shapefile data. Use the help tab to access the function's documentation for correct usage. Note that for shape files, you will need to enter both the name of the folder ("dsn") and the name of the layer ("layer"), and the layer name must match across all the files of the layer.
 
 ```{r}
 # your code here  
@@ -267,7 +271,7 @@ crs(mangrove.2000) == crs(mangrove.2017)
 # your code here 
 ```
 
-4.  Select a dataset from your own work and import it. Create a plot and determine the CRS.
+4.  Select a dataset from your own work and import it. Remember to use `rast()` for raster datasets, `st_read()` for shapefiles, and `read.csv()` followed by `st_as_sf()` for point data in table format. Create a plot of your data and determine the CRS.
 
 ```{r}
 # your code here
@@ -277,7 +281,7 @@ crs(mangrove.2000) == crs(mangrove.2017)
 
 EOO is the **minimum convex polygon** around all occurrences.
 
-It is **not** the same as actual ecosystem area.
+It is **not** the same as actual ecosystem or species range area.
 
 Instead, it is a standardised spatial metric used to assess vulnerability to broad-scale threatening events.
 
@@ -288,7 +292,7 @@ EOO <- getEOO(mangrove.2017)
 
 ```
 
-The `getEOO()` function outputs a special object containing information about the EOO analysis. It contains "slots" for the EOO polygon, its area, the units, and the input data used to derive the polygon. The package contains handy default functions for generating summaries and plots of its special functions.
+The `getEOO()` function outputs a special object containing information about the EOO analysis. It contains "slots" for the name of the assessment unit, the EOO polygon, its area, the units, and the input data used to derive the polygon. The package contains handy default functions for generating summaries and plots of its contents.
 
 ```{r}
 
@@ -302,7 +306,7 @@ plot(EOO)
 EOO.area <- getAreaEOO(EOO)
 
 # Alternatively, you can access any slot directly using the @ operator: 
-EOO.area <- EOO@area
+EOO.area <- EOO@EOO
 
 # Print the EOO area.
 EOO.area
@@ -319,31 +323,19 @@ Non-standard approaches cannot be compared directly against IUCN thresholds.
 
 **CRS mismatch pitfalls**
 
--   {terra} → projected CRS (good for area)
+-   EOO and AOO analyses → projected CRS (good for area)
 
--   {leaflet} → requires **EPSG:4326**
+-   Plotting with leaflet → requires **EPSG:4326**
 
--   So you maintain **two versions**:
+-   You may want to maintain **two versions**:
 
     -   projected → analysis
 
     -   WGS84 → visualisation
 
-### Summary
-
-```         
-Raw raster → CRS check → Projection (UTM) → Area (Criterion A)
-                                          → EOO (Criterion B)
-
-                           ↓
-                   Reproject to WGS84
-                           ↓
-                  Interactive visualisation (Leaflet)
-```
-
 ### Exercises:
 
-1.  Generate the EOO object for mangrove.2000.
+1.  Generate the EOO object for the raster mangrove.2000.
 
 ```{r}
 # your code here  
