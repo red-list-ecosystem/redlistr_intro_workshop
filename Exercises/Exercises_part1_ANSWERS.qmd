@@ -256,19 +256,36 @@ crs(mangrove.2000) == crs(mangrove.2017)
 1.  In the Data folder of this workshop, you will find a polygon dataset called WhiteAshForest. Import the data using the function `st_read()` from the sf package, used for shapefile data. Use the help tab to access the function's documentation for correct usage. Note that for shape files, you will need to enter both the name of the folder ("dsn") and the name of the layer ("layer"), and the layer name must match across all the files of the layer.
 
 ```{r}
-# your code here  
+waf <- st_read("../Data/WhiteAshForest", "WhiteAsh_NSW-MontaneWSF_NSWmapv3_03b_class_SC")  
 ```
 
 2.  Create a plot of the polygon dataset. Note that when plotting polygon data, you must ask the plot function to focus on its geometry using the function `st_geometry()`. What happens to the plot if you don't do this? (Alternatively, if you are comfortable, modify the leaflet plotting code provided above to make an interactive plot.)
 
 ```{r}
-# your code here  
+#simple geometry plot
+plot(st_geometry(waf))
+
+
+#leaflet plot
+waf_wgs84 <- st_transform(waf, "EPSG:4326")
+
+leaflet() |>
+  addProviderTiles("CartoDB.Positron") |>   # Add a light basemap for context
+  
+  addPolygons(
+    data = waf_wgs84,                                  # Add 2000 mangrove layer
+    color = "black",
+    weight = 1
+  )
 ```
 
 3.  Determine the coordinate reference system (CRS) of the polygon dataset. Is it a geodesic or projected coordinate system? If it's geodesic, project it into an appropriate projected coordinate system for analysis.
 
 ```{r}
-# your code here 
+
+st_crs(waf)
+
+st_is_longlat(waf)
 ```
 
 4.  Select a dataset from your own work and import it. Remember to use `rast()` for raster datasets, `st_read()` for shapefiles, and `read.csv()` followed by `st_as_sf()` for point data in table format. Create a plot of your data and determine the CRS.
@@ -333,19 +350,28 @@ str(EOO)
 1.  Generate the EOO object for the raster mangrove.2000.
 
 ```{r}
-# your code here  
+EOO.2000 <- getEOO(mangrove.2000) 
 ```
 
 2.  View the summary and plot of the EOO object. What is the EOO area? Did it increase or decrease between 2000 and 2017?
 
 ```{r}
-# your code here  
+summary(EOO.2000)
+plot(EOO.2000)
 ```
 
 3.  Repeat exercises 1 and 2 for the White Ash Forest polygon dataset we loaded earlier. HINT: polygon datasets often have some problematic coordinates. Check for them using st_is_valid() and fix them using st_make_valid() if needed.
 
 ```{r}
-# your code here 
+st_is_valid(waf) |> table()
+
+waf_valid <- st_make_valid(waf)
+
+EOO.waf <- getEOO(waf_valid, names_from = "ClassName")  # adding names_from helps retain the unit name, even if there's only one.
+
+summary(EOO.waf)
+
+plot(EOO.waf, title = "White Ash Forest")  # you can also manually input the name
 ```
 
 4.  Repeat exercises 1 and 2 for a dataset of your own.
