@@ -30,9 +30,9 @@ d.  Visualising data
 
 Before starting, install:
 
--   R
--   RStudio
--   Quarto (optional, but useful for workshop documents like this one)
+- R
+- RStudio
+- Quarto (optional, but useful for workshop documents like this one)
 
 We want to keep all of our files in one folder. Download a copy of the [GitHub repository](https://github.com/red-list-ecosystem/redlistr_intro_workshop.git) (use the green Code button at the top right), and save it in a convenient place on your computer. The repository will be your main workspace for this workshop. Open the workshop in Rstudio using the `redlistr_intro_workshop.Rproj` file. This will automatically set your working directory to the repository folder.
 
@@ -149,9 +149,9 @@ plot(
 
 \`add = TRUE\` overlays the 2017 map on top of the 2000 map.
 
--   **Grey** = 2000
+- **Grey** = 2000
 
--   **Orange** = 2017
+- **Orange** = 2017
 
 Therefore, areas that show up in grey are those where mangrove distribution has been lost between 2000 and 2017.
 
@@ -196,9 +196,9 @@ The {redlistr} functions require distances in **metres**, not degrees.
 
 Your data must:
 
--   be in a **projected CRS** rather than geographic longitude/latitude
+- be in a **projected CRS** rather than geographic longitude/latitude
 
--   use the **same CRS** if comparing multiple times
+- use the **same CRS** if comparing multiple times
 
 Before doing any calculations, always check the Coordinate Reference System (CRS). The package will check this internally and throw an error if datasets are provided with geographic coordinates.
 
@@ -332,18 +332,17 @@ EOO.area
 str(EOO)
 ```
 
-
 **CRS mismatch pitfalls**
 
--   EOO and AOO analyses → projected CRS (good for area)
+- EOO and AOO analyses → projected CRS (good for area)
 
--   Plotting with leaflet → requires **EPSG:4326**
+- Plotting with leaflet → requires **EPSG:4326**
 
--   You may want to maintain **two versions**:
+- You may want to maintain **two versions**:
 
-    -   projected → analysis
+  - projected → analysis
 
-    -   WGS84 → visualisation
+  - WGS84 → visualisation
 
 ### Exercises:
 
