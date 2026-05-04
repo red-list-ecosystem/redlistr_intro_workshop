@@ -55,17 +55,17 @@ hist(AOO.grid)
 
 The `getAOO()` function has sensible defaults that are readily customisable. Here is a list of arguments that can be modified:
 
--   cell_size : change to 2000 for species data (default is 10,000m x 10,000m)
+- grid.size : change to 2000 for species data (default is 10km x 10km)
 
--   names_from : argument to enter the name of the column containing species or ecosystem labels. Relevant for point or polygon data containing multiple species or ecosystems. If nothing is entered, the function assumes all inputs are part of the same assessment unit. Raster data are automatically analysed by raster value.
+- names_from : argument to enter the name of the column containing species or ecosystem labels. Relevant for point or polygon data containing multiple species or ecosystems. If nothing is entered, the function assumes all inputs are part of the same assessment unit.
 
--   bottom_1pct_rule : turn the bottom 1% rule on or off (defaults to TRUE)
+- bottom.1pct.rule : turn the bottom 1% rule on or off (defaults to TRUE)
 
--   percent : change the percent that is cut (defaults to 1%)
+- percent : change the percent that is cut (defaults to 1%)
 
--   jitter : turn random iterations on or off, e.g., if you need a quick estimate you can turn it off (defaults to TRUE = on)
+- jitter : turn random iterations on or off, e.g., if you need a quick estimate you can turn it off (defaults to TRUE = on)
 
--   n_jitter : how many random iterations are desired? (defaults to 35)
+- n_jitter : how many random iterations are desired? (defaults to 35)
 
 My diagnostics indicated that the default number of random iterations may have been insufficient. I want to run my `getAOO` again but with a larger number of iterations to get the best possible results.
 
