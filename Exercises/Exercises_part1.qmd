@@ -27,9 +27,9 @@ Lesson 4: Rate of change
 
 Before starting, install:
 
--   R (language)
--   RStudio (IDE - Integrated Development Environment)
--   Quarto (optional, but useful for workshop documents like this one)
+- R (language)
+- RStudio (IDE - Integrated Development Environment)
+- Quarto (optional, but useful for workshop documents like this one)
 
 [You will also need a folder for your workshop data. In this workshop we will use one main workspace folder and keep the processing files inside it.]{.underline}
 
@@ -96,9 +96,9 @@ mangrove.2017 <- rast(
 )
 ```
 
--   Here, `system.file()` points to files bundled inside the package.
+- Here, `system.file()` points to files bundled inside the package.
 
--   **When using your own data, replace this with a full file path, for example:** **`rast("C:/mydata/mangroves_2000.tif")`**
+- **When using your own data, replace this with a full file path, for example:** **`rast("C:/mydata/mangroves_2000.tif")`**
 
 ### 2.1 Visualise both years together
 
@@ -106,9 +106,9 @@ This first check is important. Before doing any calculations, inspect what the r
 
 `add = TRUE` overlays the 2017 map on top of the 2000 map.
 
--   **Grey** = 2000
+- **Grey** = 2000
 
--   **Orange** = 2017
+- **Orange** = 2017
 
 ```{r Plotting the two rasters, fig.show='hold', fig.width=7, fig.height=7, fig.alt='Overlay of two mangrove distribution maps'}
 plot(
@@ -135,9 +135,9 @@ The `{redlistr}` functions require distances in **metres**, not degrees.
 
 Your rasters must:
 
--   be in a **projected CRS** rather than geographic longitude/latitude
+- be in a **projected CRS** rather than geographic longitude/latitude
 
--   using the **same CRS**
+- using the **same CRS**
 
 Before doing any calculations, always check the Coordinate Reference System (CRS).
 
@@ -280,19 +280,19 @@ EOO.area
 
 **⚠️ Important technical notes**
 
--   EOO and AOO should be calculated using standard methods only. Non-standard approaches cannot be compared directly against IUCN thresholds.
+- EOO and AOO should be calculated using standard methods only. Non-standard approaches cannot be compared directly against IUCN thresholds.
 
 **CRS mismatch pitfalls**
 
--   `{terra}` → projected CRS (good for area)
+- `{terra}` → projected CRS (good for area)
 
--   `{leaflet}` → requires **EPSG:4326**
+- `{leaflet}` → requires **EPSG:4326**
 
--   So we maintain **two versions**:
+- So we maintain **two versions**:
 
-    -   projected → analysis
+  - projected → analysis
 
-    -   WGS84 → visualisation
+  - WGS84 → visualisation
 
 ## [6. Placeholder for later workshop steps]{.underline}
 
@@ -300,11 +300,11 @@ EOO.area
 
 [You can add the following sections later if needed:]{.underline}
 
--   [**AOO (Area of Occupancy)**]{.underline}
+- [**AOO (Area of Occupancy)**]{.underline}
 
--   [**Rate of change**]{.underline}
+- [**Rate of change**]{.underline}
 
--   [**Time series assessment**]{.underline}
+- [**Time series assessment**]{.underline}
 
 ## Lesson 3: **Ecosystem** Area Calculation **(Criterion A)**
 
@@ -337,7 +337,7 @@ a.both
 #sum(a$area)
 ```
 
--   `getArea()` also works on raster stacks with multiple ecosystem layers. This is useful when scaling up to many ecosystems, regions, or time points.
+- `getArea()` also works on raster stacks with multiple ecosystem layers. This is useful when scaling up to many ecosystems, regions, or time points.
 
 ### Exersise:
 
