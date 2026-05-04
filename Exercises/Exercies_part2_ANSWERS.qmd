@@ -55,17 +55,17 @@ hist(AOO.grid)
 
 The `getAOO()` function has sensible defaults that are readily customisable. Here is a list of arguments that can be modified:
 
-- grid.size : change to 2000 for species data (default is 10km x 10km)
+-   cell_size : change to 2000 for species data (default is 10,000m x 10,000m)
 
-- names_from : argument to enter the name of the column containing species or ecosystem labels. Relevant for point or polygon data containing multiple species or ecosystems. If nothing is entered, the function assumes all inputs are part of the same assessment unit.
+-   names_from : argument to enter the name of the column containing species or ecosystem labels. Relevant for point or polygon data containing multiple species or ecosystems. If nothing is entered, the function assumes all inputs are part of the same assessment unit. Raster data are automatically analysed by raster value.
 
-- bottom.1pct.rule : turn the bottom 1% rule on or off (defaults to TRUE)
+-   bottom_1pct_rule : turn the bottom 1% rule on or off (defaults to TRUE)
 
-- percent : change the percent that is cut (defaults to 1%)
+-   percent : change the percent that is cut (defaults to 1%)
 
-- jitter : turn random iterations on or off, e.g., if you need a quick estimate you can turn it off (defaults to TRUE = on)
+-   jitter : turn random iterations on or off, e.g., if you need a quick estimate you can turn it off (defaults to TRUE = on)
 
-- n_jitter : how many random iterations are desired? (defaults to 35)
+-   n_jitter : how many random iterations are desired? (defaults to 35)
 
 My diagnostics indicated that the default number of random iterations may have been insufficient. I want to run my `getAOO` again but with a larger number of iterations to get the best possible results.
 
@@ -87,13 +87,11 @@ hist(AOO.grid)
 To demonstrate how to handle datasets containing multiple assessment units, let's look back at our plant species occurrence dataset.
 
 ```{r}
-plot(plant_species[,"species"])
-
 # specify the column separating units using names_from
-# specify the grid size, usually 2kmx2km for species data
+# specify the grid size, usually 2km x 2km for species data
 # Turn off the bottom 1% rule -- not relevant for species data
-# Force random grid search for all units/species
-plant_species_AOO <- getAOO(plant_species, names_from = "species", cell_size = 2000, bottom_1pct_rule = F, jitter = T, n_jitter = 100)
+
+plant_species_AOO <- getAOO(plant_species, names_from = "species", cell_size = 2000, bottom_1pct_rule = F)
 
 #install.packages("purrr")
 library(purrr)
@@ -109,7 +107,8 @@ map(plant_species_AOO, plot)
 1.  Run diagnostics on the AOO of our species point dataset. Does the default number of 35 random iterations seem to converge to the optimal grid?
 
 ```{r}
-    # your code here
+  lapply(plant_species_AOO, jplot)
+  lapply(plant_species_AOO, hist)
 
 
 ```
@@ -117,22 +116,32 @@ map(plant_species_AOO, plot)
 2.  Calculate the AOO of our White Ash Forest dataset, then summarise and plot the results.
 
 ```{r}
-# your code here
+AOO.waf <- getAOO(waf)
+summary(AOO.waf)
+plot(AOO.waf)
 
+jplot(AOO.waf)
+hist(AOO.waf)
+
+AOO.waf <- getAOO(waf, n_jitter = 150)
 
 ```
 
-3.  Calculate AOO for our raster dataset, but turn off the bottom 1% rule. Compare the results for AOO with and without the rule.
+3.  Calculate AOO for our 2017 mangrove raster dataset, but turn off the bottom 1% rule. Compare the results for AOO with and without the rule.
 
 ```{r}
-# your code here
+AOO.dropnone <- getAOO(mangrove.2017, bottom_1pct_rule = FALSE, n_jitter = 150)
 
+plot(AOO.grid)
+plot(AOO.dropnone)
 ```
 
 4.  Modfiy your code to apply the bottom 1% rule, but dropping the bottom 5%. Compare your results to exercise 3.
 
 ```{r}
-# your code here
+AOO.drop5 <- getAOO(mangrove.2017, percent = 5, n_jitter = 150)
+
+plot(AOO.drop5)
 
 ```
 
@@ -203,14 +212,14 @@ extrapolated.area
 
 ### Exercises:
 
-1.  Repeat the calculations of area/rates of change on an example polygon dataset.
+1.  Repeat the calculations of area/rates of change on a polygon dataset.
 
     ```{r}
 
     #your code here
     ```
 
-2.  Extrapolate -- are three decline modes in agreement?
+2.  Extrapolate -- are three decline models in agreement?
 
     ```{r}
 
