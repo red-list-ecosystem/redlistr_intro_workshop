@@ -1,40 +1,26 @@
 ---
 title: "Workshop: Introduction to 'redlistr'" # Title of the workshop page
-author: "Abhimanyu raj Singh"
 format: html
-editor: visual # Prefer Quarto's visual editor mode in supported editors
+editor: visual # Prefer Quarto's source editor mode in supported editors
 ---
 
-## Overview -Lesson plan
+## Overview - Lesson plan
 
-A beginner workshop for using the `{redlistr}` package in **R** to calculate key spatial metrics used in the **IUCN Red List of Ecosystems** workflow from ecosystem distribution rasters, [*shapefiles and datasheets.*]{.underline}
-
-Lesson 0: Introduction to R, RStudio, and Quarto
-
-Lesson 1: Setting up the environment and loading packages
-
-Lesson 2: Getting the data
-
-Lesson 3: Area calculation
-
-Lesson 4: Extent of Occurrence (EOO)
-
-Lesson 3: Area of Occupancy (AOO)
-
-Lesson 4: Rate of change
-
-## Lesson 0: Introduction to R, Rstudio and Quarto
 A beginner workshop for using the `{redlistr}` package in **R** to calculate key spatial metrics used in the **IUCN Red Lists of Ecosystems and Species** workflow from ecosystem distribution rasters.
+
+!!! [*shapefiles and datasheets.*]{.underline}
 
 **Lesson 1: Setup**
 
-a.  Introduction to R, RStudio, and Quarto
+a.  Introduction to `redlistr` repository, R, RStudio, and Quarto
 
 b.  Setting up the environment
 
 c.  Importing data
 
-d.  Visualising data
+d.  Checking data
+
+e.  Visualising data
 
 **Lesson 2: Extent of Occurrence (EOO)**
 
@@ -44,25 +30,29 @@ d.  Visualising data
 
 ## Lesson 1. Setup
 
-### a. Introduction to R, Rstudio and Quarto
+### a. Introduction to `redlistr` repository, R, RStudio, and Quarto
+
+[!!!You will also need a folder for your workshop data. In this workshop we will use one main workspace folder and keep the processing files inside it.]{.underline}
+
+We want to keep all of our files in one folder. Download a copy of the [GitHub repository](https://github.com/red-list-ecosystem/redlistr_intro_workshop.git) (use the green Code button at the top right), and save it in a convenient place on your computer. The repository will be your main workspace for this workshop. Open the workshop in Rstudio using the `redlistr_intro_workshop.Rproj` file. This will automatically set your working directory to the repository folder.
+
+``` text
+redlistr_intro_workshop/
+├── Data
+    ├── WhiteAshForest
+        ├── (spatial files)
+    ├── Plant_species_points.csv
+├── Exersises
+    ├── Workshop.qmd
+├── .gitignore
+├── redlistr_intro_workshop.proj
+```
 
 Before starting, install:
 
-- R (language)
-- RStudio (IDE - Integrated Development Environment)
-- Quarto (optional, but useful for workshop documents like this one)
-
-[You will also need a folder for your workshop data. In this workshop we will use one main workspace folder and keep the processing files inside it.]{.underline}
-
-``` text
-Workshop_redlistr/
-├── Workshop.qmd
-```
-
-## Lesson 1: Setting up environment and loading packages
-
-### 1.1 Install Packages
-We want to keep all of our files in one folder. Download a copy of the [GitHub repository](https://github.com/red-list-ecosystem/redlistr_intro_workshop.git) (use the green Code button at the top right), and save it in a convenient place on your computer. The repository will be your main workspace for this workshop. Open the workshop in Rstudio using the `redlistr_intro_workshop.Rproj` file. This will automatically set your working directory to the repository folder.
+-   R (language)
+-   RStudio (IDE - Integrated Development Environment)
+-   Quarto (optional, but useful for workshop documents like this one)
 
 ### b. Setting up environment
 
@@ -77,33 +67,32 @@ Run this once on your computer if the packages are not already installed:
 install.packages(c(
   "sf",              # shapefile handling
   "terra",           # raster handling
-  #"leaflet",         # interactive maps
+  "leaflet",         # interactive maps
   "redlistr"         # Red List of Ecosystems helper functions
 ))
 
-### TODO: If we don't publish to CRAN, we will need: 
-install.packages("remotes")
-remotes::install_github("red-list-ecosystem/redlistr")
+### TODO: If we to pull package  CRAN, we will need: 
+#install.packages("remotes")
+#remotes::install_github("red-list-ecosystem/redlistr")
 # if at this point you are prompted to update packages, enter 1 to update ALL and click "yes" in the popup window.
-
 ```
 
-### 1.2 Load Packages
 #### Load Packages
 
-Run this in each session:
+Run this each session when you start your analysis:
 
-```{r Loading packages, message=FALSE}
+```{r Loading packagesmessage=FALSE}
 # Load packages
-library(sf) # work with point, line, and polygon data
-library(terra) # work with raster data
-#library(leaflet) # build interactive maps
+
+library(sf)  # work with point, line, and polygon data
+library(terra)  # work with raster data
+library(leaflet) # build interactive maps
 library(redlistr) # Red List of Ecosystems calculations
 ```
 
-### 1.3 Set Your Workspace
+### !!! Set Your Workspace
 
-### The easiest habit for beginners is to create one object called `Workspace` and build all file paths from it.
+The easiest habit for beginners is to create one object called `Workspace` and build all file paths from it.
 
 ```{r}
 # We will keep your default directory for workshop use today and assign it as our workspace
@@ -113,14 +102,13 @@ Workspace <- getwd()
 dir.create(Workspace, recursive = TRUE, showWarnings = FALSE)
 ```
 
-## Lesson 2: Get data, run checks and explore
 ### c. Importing Data
 
 #### Raster data
 
 In this step, we first get the data, then visualise them and check if our data matches the metadata.
 
-Here we will use the mangrove rasters bundled inside `{redlistr}`. Our data-set is based on Mangrooves distributions around French island VIC.
+Here we will use the mangrove rasters bundled inside `{redlistr}`. Our data-set is based on Mangrooves distributions around French Island VIC.
 
 ```{r Loading our example distributions}
 # Read the example mangrove raster for year 2000 from the redlistr package.
@@ -134,24 +122,11 @@ mangrove.2017 <- rast(
 )
 ```
 
-- Here, `system.file()` points to files bundled inside the package.
+-   Here, `system.file()` points to files bundled inside the package.
 
-- **When using your own data, replace this with a full file path, for example:** **`rast("C:/mydata/mangroves_2000.tif")`**
+-   **When using your own data, replace this with a full file path, for example:** **`rast("C:/mydata/mangroves_2000.tif")`**
 
-### 2.1 Visualise both years together
-
-This first check is important. Before doing any calculations, inspect what the rasters looks like.
-
-`add = TRUE` overlays the 2017 map on top of the 2000 map.
-
-- **Grey** = 2000
-
-- **Orange** = 2017
-`rast()` specifies that the file is to be read in as a raster file.
-
-When using your own raster data, replace this with a full file path, for example:\`rast("C:/mydata/mangroves_2000.tif")\`
-
-#### Species point data.
+#### Species point data
 
 Let's do one more example to address the import of point data (e.g., species occurrences). We will use this dataset later to demonstrate calculations with multiple assessment units at once.
 
@@ -165,25 +140,115 @@ plant_species <- read.csv("../Data/Plant_species_points.csv") |>
   # specify the Coordinate system the data was provided in
     st_set_crs(4326) 
 
-
 # Look at the resulting spatial points dataset
 plant_species
+#class(plant_species)
 ```
 
 **⚠️ New R skill**
 
-You will notice we have used the special operator `|>` in the code above. This is called a "pipe" and allows you to enter instructions sequentially, without saving intermediate products. A pipe takes the product of the code before it and inserts it into the first argument slot of the function after it. So, the code below has the same effect, but is much messier!
+-   You will notice we have used the special operator `|>` in the code above. This is called a "pipe" and allows you to enter instructions sequentially, without saving intermediate products. A pipe takes the product of the code before it and inserts it into the first argument slot of the function after it. So, the code below has the same effect, but is much messier!
+-   This snippet below calls a CSV file named `Plant_species_points.csv` (located in a `Data` folder one level up from your current directory), which contains plant species records with longitude and latitude columns. The `st_as_sf()` function converts it from a plain table into a **spatial points object**, telling R which columns hold the coordinates (`lon` and `lat`). (**Spatial CSVs**)
 
 ```{r}
 
 intermediate1 <- st_as_sf(read.csv("../Data/Plant_species_points.csv"), coords = c("lon", "lat"))
 plant_species <- st_set_crs(intermediate1, 4326)
+plant_species
+class(plant_species)
+```
+
+```{r}
+# plain aspatial
+aspatial <- read.csv("../Data/Plant_species_points.csv")
+class(aspatial)       # "data.frame"
+ncol(aspatial)        # 8 columns (including lon and lat)
+names(aspatial)  # geometry column replaces lon + lat
+
+# spatial
+class(plant_species)  # "sf" "data.frame"
+ncol(plant_species)   # 7 columns (lon & lat merged into geometry)
+names(plant_species)  # geometry column replaces lon + lat
+```
+
+##### !!! For Alternative formats
+
+See vignette [Ecosystem distribution data in raster and vector format](redlistr-raster-vector.html) for instruction on how to read ecosystem distribution data in other formats like shapefiles.
+
+### b. Checking Data
+
+It is critical to perform two checks **before any calculations**.
+
+The `{redlistr}` functions require distances in **metres**, not degrees.
+
+Your data must:
+
+-   be in a **projected CRS** rather than geographic longitude/latitude
+
+-   use the **same CRS** if comparing multiple times
+
+Before doing any calculations, always check the Coordinate Reference System (CRS). The package will check this internally and throw an error if datasets are provided with geographic coordinates.
+
+**Definition:** CRS (Coordinate Reference System) defines how spatial data are positioned on the Earth (e.g., latitude/longitude -- geodesic coordinate systems that model a round surface or projected coordinate systems where coordinates are projected onto a flat surface).
+
+**Definition:** Projected CRS here represents data in metres (or feet), which is required for accurate area and distance calculations, as degrees can represent different distances depending on latitude.
+
+Note: For Red List assessments, it is best to choose a CRS that compromises between accurate areas, distances, and bearings. For smaller extents, the exact CRS will not affect the results, but for analyses covering larger, regional areas, we might like to test if different projections yield different results.
+
+##### Let's check CRS of **both** rasters
+
+```{r}
+# Print CRS of 2000 raster
+st_crs(mangrove.2000)
+
+# Print CRS of 2017 raster
+st_crs(mangrove.2017)
+
+# Example: choose a projected CRS suitable for your study area
+# mangrove.2000 <- project(mangrove.2000, "EPSG:32754")
+# mangrove.2017 <- project(mangrove.2017, "EPSG:32754")
+
+# transform points to a projected CRS (UTM)
+plant_species <- st_transform(plant_species, 3577)
+plant_species
+```
+
+#### Check if data are in longitude/latitude (degrees)
+
+```{r}
+# TRUE = geographic (degrees), FALSE = projected (metres)
+# terra function for rasters
+is.lonlat(mangrove.2000)
+is.lonlat(mangrove.2017)
+
+# sf function for shapefiles
+st_is_longlat(plant_species)
+
 
 ```
 
-### d. Visualising data
+If `is.lonlat()` or `st_is_longlat()` returns TRUE, your data are in degrees (longitude/latitude).
+
+You must reproject them before continuing. We will not cover selecting an appropriate CRS in this workshop, but external resources for this step are available. The `rast` package contains the `project()` function for reprojecting rasters, while the `sf` function `st_transform()` is used for points, lines, or polygons. Note the differing notation for specifying the CRS.
+
+#### Compare CRS between layers
+
+```{r}
+# Check if both rasters use the same CRS
+crs(mangrove.2000) == crs(mangrove.2017)
+```
+
+### c. Visualising data
 
 Before doing any calculations, inspect what the rasters look like.
+
+`add = TRUE` overlays the 2017 map on top of the 2000 map.
+
+-   **Grey** = 2000
+
+-   **Orange** = 2017 `rast()` specifies that the file is to be read in as a raster file.
+
+Therefore, areas that show up in grey are those where mangrove distribution has been lost between 2000 and 2017.
 
 ```{r Plotting the two rasters, fig.show='hold', fig.width=7, fig.height=7, fig.alt='Overlay of two mangrove distribution maps'}
 plot(
@@ -202,101 +267,45 @@ plot(
 # Overlap = stable areas, non-overlap = change (gain/loss)
 ```
 
-### 2.2 Data preparation checks for our calculations: Check CRS of **both** rasters
-
-Second step is also **critical before any calculations**.
-
-The `{redlistr}` functions require distances in **metres**, not degrees.
-
-Your rasters must:
-
-- be in a **projected CRS** rather than geographic longitude/latitude
-
-- using the **same CRS**
-
-Before doing any calculations, always check the Coordinate Reference System (CRS).
-
-**Definition:** CRS (Coordinate Reference System) defines how spatial data are positioned on the Earth (e.g., latitude/longitude or projected metres).
-
-**Definition:** Projected CRS represents data in metres, which is required for accurate area and distance calculations.
-
-```{r}
-# Print CRS of 2000 raster
-crs(mangrove.2000)
-
-# Print CRS of 2017 raster
-crs(mangrove.2017)
-
-# Example only: choose a projected CRS suitable for your study area
-# mangrove.2000 <- project(mangrove.2000, "EPSG:32754")
-# mangrove.2017 <- project(mangrove.2017, "EPSG:32754")
-```
-
-#### Check if data are in longitude/latitude (degrees)
-
-```{r}
-# TRUE = geographic (degrees), FALSE = projected (metres)
-is.lonlat(mangrove.2000)
-is.lonlat(mangrove.2017)
-
-```
-
-If `is.lonlat()` returns TRUE, your data are in degrees (longitude/latitude). You must reproject them before continuing.
-
-#### Compare CRS between layers
-
-```{r}
-# Check if both rasters use the same CRS
-crs(mangrove.2000) == crs(mangrove.2017)
-```
-
-### 2.3 Explore rasters on the interactive map for content and comparison
-\`add = TRUE\` overlays the 2017 map on top of the 2000 map.
-
--   **Grey** = 2000
-
--   **Orange** = 2017
-
-Therefore, areas that show up in grey are those where mangrove distribution has been lost between 2000 and 2017.
-
-#### Explore rasters on an interactive map for content and comparison (optional)
+### Explore rasters on an interactive map for content and comparison (optional)
 
 Lastly, for web maps, rasters need to be in **WGS84** (`EPSG:4326`).
 
 ```{r}
-# Reproject rasters to WGS84 (EPSG:4326) for Leaflet compatibility if you data is in GDA 94 or others CRS family.
+# Reproject rasters to WGS84 (EPSG:4326) for Leaflet compatibility if your data is in GDA 94 or other CRS families.
 #m2000 <- project(mangrove.2000, "EPSG:4326")   # Convert 2000 raster to lat/long
 #m2017 <- project(mangrove.2017, "EPSG:4326")   # Convert 2017 raster to lat/long
 
-leaflet() |>
-  addProviderTiles("CartoDB.Positron") |>   # Add a light basemap for context
-  
-  addRasterImage(
-    m2000,                                  # Add 2000 mangrove layer
-    colors = function(x) ifelse(is.na(x), NA, "grey30"), # Grey for presence
-    opacity = 0.7,                          # Semi-transparent for overlay
-    group = "Mangrove 2000"                 # Layer name for toggle control
-  ) |>
-  
-  addRasterImage(
-    m2017,                                  # Add 2017 mangrove layer
-    colors = function(x) ifelse(is.na(x), NA, "darkorange"), # Orange for presence
-    opacity = 0.7,                          # Same transparency for comparison
-    group = "Mangrove 2017"                 # Layer name for toggle control
-  ) |>
-  
-  addLayersControl(
-    overlayGroups = c("Mangrove 2000", "Mangrove 2017"), # Toggle between years
-    options = layersControlOptions(collapsed = FALSE)    # Keep control panel open
-  )
+m2000 <- mangrove.2000
+m2017 <- mangrove.2017
+
+# Note: Leaflet package needs to be loaded for this code to work
+ library(leaflet)
+ leaflet() |>
+   addProviderTiles("CartoDB.Positron") |>   # Add a light basemap for context
+   
+   addRasterImage(
+     m2000,                                  # Add 2000 mangrove layer
+     colors = function(x) ifelse(is.na(x), NA, "grey30"), # Grey for presence
+     opacity = 0.7,                          # Semi-transparent for overlay
+     group = "Mangrove 2000"                 # Layer name for toggle control
+   ) |>
+   
+   addRasterImage(
+     m2017,                                  # Add 2017 mangrove layer
+     colors = function(x) ifelse(is.na(x), NA, "darkorange"), # Orange for presence
+     opacity = 0.7,                          # Same transparency for comparison
+     group = "Mangrove 2017"                 # Layer name for toggle control
+   ) |>
+   
+   addLayersControl(
+     overlayGroups = c("Mangrove 2000", "Mangrove 2017"), # Toggle between years
+     options = layersControlOptions(collapsed = FALSE)    # Keep control panel open
+   )
 # Toggle layers to visually compare change in mangrove distribution between years
 ```
 
-##### For Alternative formats
-
-See vignette [Ecosystem distribution data in raster and vector format](redlistr-raster-vector.html) for instruction on how to read ecosystem distribution data in other formats like shapefiles.
-
-### Exersises:
+### !!! Exersises:
 
 1.  Get your own raster data
 
@@ -325,70 +334,8 @@ See vignette [Ecosystem distribution data in raster and vector format](redlistr-
 
     #your code here
     ```
-#### Data preparation checks for our calculations
 
-It is critical to perform two checks **before any calculations**.
-
-The {redlistr} functions require distances in **metres**, not degrees.
-
-Your data must:
-
--   be in a **projected CRS** rather than geographic longitude/latitude
-
--   use the **same CRS** if comparing multiple times
-
-Before doing any calculations, always check the Coordinate Reference System (CRS). The package will check this internally and throw an error if datasets are provided with geographic coordinates.
-
-**Definition:** CRS (Coordinate Reference System) defines how spatial data are positioned on the Earth (e.g., latitude/longitude -- geodesic coordinate systems that model a round surface or projected coordinate systems where coordinates are projected onto a flat surface).
-
-**Definition:** Projected CRS represents data in metres (or feet), which is required for accurate area and distance calculations, as degrees can represent different distances depending on latitude.
-
-Note: For Red List assessments, it is best to choose a CRS that compromises between accurate areas, distances, and bearings. For smaller extents, the exact CRS will not affect the results, but for analyses covering larger, regional areas, we might like to test if different projections yield different results.
-
-#### Check CRS of **both** rasters
-
-```{r}
-# Print CRS of 2000 raster
-st_crs(mangrove.2000)
-
-# Print CRS of 2017 raster
-st_crs(mangrove.2017)
-```
-
-#### Check if data are in longitude/latitude (degrees)
-
-```{r}
-# TRUE = geographic (degrees), FALSE = projected (metres)
-# terra function for rasters
-is.lonlat(mangrove.2000)
-is.lonlat(mangrove.2017)
-
-# sf function for shapefiles
-st_is_longlat(plant_species)
-```
-
-If `is.lonlat()` or `st_is_longlat()` returns TRUE, your data are in degrees (longitude/latitude).
-
-You must reproject them before continuing. We will not cover selecting an appropriate CRS in this workshop, but external resources for this step are available. The `rast` package contains the `project()` function for reprojecting rasters, while the `sf` function `st_transform()` is used for points, lines, or polygons. Note the differing notation for specifying the CRS.
-
-```{r}
-# Example: choose a projected CRS suitable for your study area
-# mangrove.2000 <- project(mangrove.2000, "EPSG:32754")
-# mangrove.2017 <- project(mangrove.2017, "EPSG:32754")
-
-# transform points to a projected CRS (UTM)
-plant_species <- st_transform(plant_species, 3577)
-  
-```
-
-#### Compare CRS between layers
-
-```{r}
-# Check if both rasters use the same CRS
-crs(mangrove.2000) == crs(mangrove.2017)
-```
-
-### Exercises:
+### Exercises L1:
 
 1.  In the Data folder of this workshop, you will find a polygon dataset called WhiteAshForest. Import the data using the function `st_read()` from the sf package, used for shapefile data. Use the help tab to access the function's documentation for correct usage. Note that for shape files, you will need to enter both the name of the folder ("dsn") and the name of the layer ("layer"), and the layer name must match across all the files of the layer.
 
@@ -414,19 +361,19 @@ crs(mangrove.2000) == crs(mangrove.2017)
 # your code here
 ```
 
-## Lesson 2: **Extent of occurrence --- EOO (Criterion B1)**
-
-## Lesson 4: **Calculate extent of occurrence --- EOO (Criterion B1)**
+## Lesson 2: **Extent Of Occurrence --- EOO (Criterion B1)**
 
 For subcriterion B1 , EOO is defined as the **minimum convex polygon** around all occurrences.
-It is **not** the same as actual ecosystem or species range area.
 
 It is **not** the same as actual ecosystem area of the species. Instead, it is a standardised spatial metric used to assess vulnerability to broad-scale threatening events.
 
 ```{r}
 # Create the minimum convex polygon around all ecosystem presence cells in 2017.
 # In the current redlistr package, the function name is getEOO().
+#EOO <- makeEOO(mangrove.2017)
+library(redlistr) # Red List of Ecosystems calculations
 EOO <- getEOO(mangrove.2017)
+
 
 ```
 
@@ -450,7 +397,7 @@ EOO.area <- EOO@EOO
 EOO.area
 ```
 
-### Exersise:
+### Exersise L2:
 
 1.  Get Extent of Occurrence for your own data using the example above.
 
@@ -461,20 +408,19 @@ EOO.area
 
 **⚠️ Important technical notes**
 
-- EOO and AOO should be calculated using standard methods only. Non-standard approaches cannot be compared directly against IUCN thresholds.
+-   EOO and AOO should be calculated using standard methods only. Non-standard approaches cannot be compared directly against IUCN thresholds.
 
 **CRS mismatch pitfalls**
 
-- `{terra}` → projected CRS (good for area)
+-   `{terra}` → projected CRS (good for area)
 
-- `{leaflet}` → requires **EPSG:4326**
+-   `{leaflet}` → requires **EPSG:4326**
 
-- So we maintain **two versions**:
+-   So we maintain **two versions**:
 
-# You can always use the str() function to get an overview of the contents of an object, for instance if you don't know what the slots are named:
+You can always use the str() function to get an overview of the contents of an object, for instance if you don't know what the slots are named:
+
 str(EOO)
-```
-
 
 **CRS mismatch pitfalls**
 
@@ -484,9 +430,9 @@ str(EOO)
 
 -   You may want to maintain **two versions**:
 
-  - projected → analysis
+-   projected → analysis
 
-  - WGS84 → visualisation
+-   WGS84 → visualisation
 
 ## [6. Placeholder for later workshop steps]{.underline}
 
@@ -494,11 +440,11 @@ str(EOO)
 
 [You can add the following sections later if needed:]{.underline}
 
-- [**AOO (Area of Occupancy)**]{.underline}
+-   [**AOO (Area of Occupancy)**]{.underline}
 
-- [**Rate of change**]{.underline}
+-   [**Rate of change**]{.underline}
 
-- [**Time series assessment**]{.underline}
+-   [**Time series assessment**]{.underline}
 
 ## Lesson 3: **Ecosystem** Area Calculation **(Criterion A)**
 
@@ -531,14 +477,13 @@ a.both
 #sum(a$area)
 ```
 
-- `getArea()` also works on raster stacks with multiple ecosystem layers. This is useful when scaling up to many ecosystems, regions, or time points.
+-   `getArea()` also works on raster stacks with multiple ecosystem layers. This is useful when scaling up to many ecosystems, regions, or time points.
 
 ### Exersise:
 
-1.  Get Area for your
-### Exercises:
+1.  Get Area for your \### Exercises:
 
-1.  Generate the EOO object for the raster mangrove.2000.
+2.  Generate the EOO object for the raster mangrove.2000.
 
 ```{r}
 # your code here  
