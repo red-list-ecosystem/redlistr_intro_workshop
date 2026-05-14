@@ -1,0 +1,166 @@
+---
+title: "Workshop: Introduction to redlistr Part 2"
+author: "Aniko B. Toth"
+format: html
+editor: visual
+---
+
+### Exercises Lesson 1:
+
+1.  In the Data folder of this workshop, you will find a polygon dataset called WhiteAshForest. Import the data using the function `st_read()` from the sf package, used for shapefile data. Use the help tab to access the function's documentation for correct usage. Note that for shape files, you will need to enter both the name of the folder ("dsn") and the name of the layer ("layer"), and the layer name must match across all the files of the layer.
+
+```{r}
+waf <- st_read("../Data/WhiteAshForest", "WhiteAsh_NSW-MontaneWSF_NSWmapv3_03b_class_SC")  
+```
+
+2.  Create a plot of the polygon dataset. Note that when plotting polygon data, you must ask the plot function to focus on its geometry using the function `st_geometry()`. What happens to the plot if you don't do this? (Alternatively, if you are comfortable, modify the leaflet plotting code provided above to make an interactive plot.)
+
+```{r}
+#simple geometry plot
+plot(st_geometry(waf))
+
+
+#leaflet plot
+waf_wgs84 <- st_transform(waf, "EPSG:4326")
+
+leaflet() |>
+  addProviderTiles("CartoDB.Positron") |>   # Add a light basemap for context
+  
+  addPolygons(
+    data = waf_wgs84,                                  # Add 2000 mangrove layer
+    color = "black",
+    weight = 1
+  )
+```
+
+3.  Determine the coordinate reference system (CRS) of the polygon dataset. Is it a geodesic or projected coordinate system? If it's geodesic, project it into an appropriate projected coordinate system for analysis.
+
+```{r}
+
+st_crs(waf)
+
+st_is_longlat(waf)
+```
+
+4.  Select a dataset from your own work and import it. Remember to use `rast()` for raster datasets, `st_read()` for shapefiles, and `read.csv()` followed by `st_as_sf()` for point data in table format. Create a plot of your data and determine the CRS.
+
+```{r}
+# your code here
+```
+
+### Exercises Lesson 2:
+
+1.  Generate the EOO object for the raster mangrove.2000.
+
+```{r}
+EOO.2000 <- getEOO(mangrove.2000) 
+```
+
+2.  View the summary and plot of the EOO object. What is the EOO area? Did it increase or decrease between 2000 and 2017?
+
+```{r}
+summary(EOO.2000)
+plot(EOO.2000)
+```
+
+3.  Repeat exercises 1 and 2 for the White Ash Forest polygon dataset we loaded earlier. HINT: polygon datasets often have some problematic coordinates. Check for them using st_is_valid() and fix them using st_make_valid() if needed.
+
+```{r}
+st_is_valid(waf) |> table()
+
+waf_valid <- st_make_valid(waf)
+
+EOO.waf <- getEOO(waf_valid, names_from = "ClassName")  # adding names_from helps retain the unit name, even if there's only one.
+
+summary(EOO.waf)
+
+plot(EOO.waf, title = "White Ash Forest")  # you can also manually input the name
+```
+
+4.  Repeat exercises 1 and 2 for a dataset of your own.
+
+```{r}
+# your code here
+```
+
+### Exercises Lesson 3:
+
+1.  Run diagnostics on the AOO of our species point dataset. Does the default number of 35 random iterations seem to converge to the optimal grid?
+
+```{r}
+  lapply(plant_species_AOO, jplot)
+  lapply(plant_species_AOO, hist)
+
+
+```
+
+2.  Calculate the AOO of our White Ash Forest dataset, then summarise and plot the results.
+
+```{r}
+AOO.waf <- getAOO(waf)
+summary(AOO.waf)
+plot(AOO.waf)
+
+jplot(AOO.waf)
+hist(AOO.waf)
+
+AOO.waf <- getAOO(waf, n_jitter = 150)
+
+```
+
+3.  Calculate AOO for our 2017 mangrove raster dataset, but turn off the bottom 1% rule. Compare the results for AOO with and without the rule.
+
+```{r}
+AOO.dropnone <- getAOO(mangrove.2017, bottom_1pct_rule = FALSE, n_jitter = 150)
+
+plot(AOO.grid)
+plot(AOO.dropnone)
+```
+
+4.  Modfiy your code to apply the bottom 1% rule, but dropping the bottom 5%. Compare your results to exercise 3.
+
+```{r}
+AOO.drop5 <- getAOO(mangrove.2017, percent = 5, n_jitter = 150)
+
+plot(AOO.drop5)
+
+```
+
+5.  Apply the AOO function to your own data and run diagnostics. Do your results agree with any previous assessments? Why or why not?
+
+```{r}
+# your code here
+
+```
+
+### Exercises Lesson 4:
+
+1.  Repeat the calculations of area/rates of change on a polygon dataset.
+
+    ```{r}
+
+    #your code here
+    ```
+
+2.  Extrapolate -- are three decline models in agreement?
+
+    ```{r}
+
+    #your code here
+    ```
+
+3.  Calculate the estimated rate of change in the population of XXX using PRD and extrapolate to XX years.
+
+    ```{r}
+
+    #your code here
+    ```
+
+4.  Use a dataset of your own to estimate the rate of change and the percent change in area/population over a time frame that is relevant to your ecosystem or species.
+
+    ```{r}
+
+    #your code here
+    ```
+
+Thank you :)
