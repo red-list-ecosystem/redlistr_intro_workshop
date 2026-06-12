@@ -40,10 +40,8 @@ redlistr_intro_workshop/
         ├── (spatial files)
     ├── Plant_species_points.csv
 ├── Exersises
-    ├── Exercises_part1.qmd
-    ├── Exercises_part2.qmd
-    ├── Exercises_part1_ANSWERS.qmd
-    ├── Exercises_part2_ANSWERS.qmd
+    ├── Exercises.qmd
+    ├── Exercises_ANSWERS.qmd
 ├── .gitignore
 ├── redlistr_intro_workshop.proj
 ```
@@ -72,9 +70,9 @@ install.packages(c(
   "leaflet",         # interactive maps
   ))
 
-### TODO: If we to pull package  CRAN, we will need: 
+### before package is loaded to CRAN: 
 install.packages("remotes")
-remotes::install_github("red-list-ecosystem/redlistr")
+remotes::install_github("red-list-ecosystem/redlistr", force = TRUE)
 # if at this point you are prompted to update packages, enter 1 to update ALL and click "yes" in the popup window.
 ```
 
@@ -97,7 +95,7 @@ library(redlistr) # Red List of Ecosystems calculations
 
 In this step, we first get the data, then visualise them and check if our data matches the metadata.
 
-Here we will use the mangrove rasters bundled inside `{redlistr}`. Our data-set is based on Mangrooves distributions around French Island VIC.
+Here we will use the mangrove rasters bundled inside `{redlistr}`. Our data-set is based on Mangroves distributions around French Island VIC.
 
 ```{r Loading our example distributions}
 # Read the example mangrove raster for year 2000 from the redlistr package.
@@ -415,11 +413,11 @@ hist(AOO.grid)
 
 The `getAOO()` function has sensible defaults that are readily customisable. Here is a list of arguments that can be modified:
 
--   grid.size : change to 2000 for species data (default is 10km x 10km)
+-   cell_size: change to 2000 for species data (default is 10km x 10km)
 
 -   names_from : argument to enter the name of the column containing species or ecosystem labels. Relevant for point or polygon data containing multiple species or ecosystems. If nothing is entered, the function assumes all inputs are part of the same assessment unit.
 
--   bottom.1pct.rule : turn the bottom 1% rule on or off (defaults to TRUE)
+-   bottom_1pct_rule : turn the bottom 1% rule on or off (defaults to TRUE)
 
 -   percent : change the percent that is cut (defaults to 1%)
 
@@ -447,13 +445,16 @@ hist(AOO.grid)
 To demonstrate how to handle datasets containing multiple assessment units, let's look back at our plant species occurrence dataset.
 
 ```{r}
-plot(plant_species[,"species"])
 
 # specify the column separating units using names_from
 # specify the grid size, usually 2kmx2km for species data
 # Turn off the bottom 1% rule -- not relevant for species data
 # Force random grid search for all units/species
-plant_species_AOO <- getAOO(plant_species, names_from = "species", cell_size = 2000, bottom_1pct_rule = F, jitter = T, n_jitter = 100)
+plant_species_AOO <- getAOO(plant_species, 
+                            names_from = "species", 
+                            cell_size = 2000, 
+                            bottom_1pct_rule = F, 
+                            jitter = T)
 
 #install.packages("purrr")
 library(purrr)
