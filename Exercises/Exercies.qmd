@@ -80,7 +80,7 @@ remotes::install_github("red-list-ecosystem/redlistr", force = TRUE)
 
 Run this each session when you start your analysis:
 
-```{r Loading packagesmessage=FALSE}
+```{r Load Packages, message=FALSE, packagesmessage=FALSE}
 # Load packages
 
 library(sf)  # work with point, line, and polygon data
@@ -144,6 +144,8 @@ plant_species <- st_set_crs(intermediate1, 4326)
 plant_species
 class(plant_species)
 ```
+
+Use the code below to compare the format of a regular table loaded in from a .csv file ("aspatial") and the corresponding spatially explicit object ("plant_species").
 
 ```{r}
 # plain aspatial
@@ -326,8 +328,7 @@ It is **not** the same as actual ecosystem area of the species. Instead, it is a
 
 ```{r}
 # Create the minimum convex polygon around all ecosystem presence cells in 2017.
-# In the current redlistr package, the function name is getEOO().
-#EOO <- makeEOO(mangrove.2017)
+# In the new development of the redlistr package, the function name is getEOO().
 library(redlistr) # Red List of Ecosystems calculations
 EOO <- getEOO(mangrove.2017)
 
@@ -403,7 +404,7 @@ You can run some diagnostics on the results to get a sense for whether you ran e
 
 ```{r Getting number of AOO grids, eval = FALSE}
 
-# jplot: we are looking for the last decrease to occur early
+# jplot shows the running minimum grid number over our random grid iterations. We are looking for the last decrease to occur earlier.
 jplot(AOO.grid) 
 
 # histogram of values generated with each rep: should look like a bell curve if enough iterations were run. More iterations may produce better results if the left side of the bell curve is missing.
@@ -413,15 +414,15 @@ hist(AOO.grid)
 
 The `getAOO()` function has sensible defaults that are readily customisable. Here is a list of arguments that can be modified:
 
--   cell_size: change to 2000 for species data (default is 10km x 10km)
+-   cell_size: change to 2000 m for species data (default is 10000 m \* 10000 m)
 
--   names_from : argument to enter the name of the column containing species or ecosystem labels. Relevant for point or polygon data containing multiple species or ecosystems. If nothing is entered, the function assumes all inputs are part of the same assessment unit.
+-   names_from : argument to enter the name of the column containing species or ecosystem labels. Relevant for point or polygon data containing multiple species or ecosystems. If nothing is entered, the function assumes all inputs are part of the same assessment unit. Ignored for raster inputs.
 
 -   bottom_1pct_rule : turn the bottom 1% rule on or off (defaults to TRUE)
 
 -   percent : change the percent that is cut (defaults to 1%)
 
--   jitter : turn random iterations on or off, e.g., if you need a quick estimate you can turn it off (defaults to TRUE = on)
+-   jitter : turn random iterations on or off, or specify the desired cell number threshold under which random iterations should be run. 0 = no random iterations, 1 = force random iterations for all units, and another positive integer indicates the cutoff (defaults to 150, e.g. units with fewer than 150 cells in the initial grid will be jittered).
 
 -   n_jitter : how many random iterations are desired? (defaults to 35)
 
@@ -454,7 +455,7 @@ plant_species_AOO <- getAOO(plant_species,
                             names_from = "species", 
                             cell_size = 2000, 
                             bottom_1pct_rule = F, 
-                            jitter = T)
+                            jitter = 1)
 
 #install.packages("purrr")
 library(purrr)
@@ -504,7 +505,7 @@ map(plant_species_AOO, plot)
 
 ```
 
-## Lesson 4 : Calculating rates of change (45 minutes)
+## Lesson 4 : Calculating rates of change
 
 Criterion A of the Red List of Ecosystems and Criteria A-C of the Red List of Threatened Species all deal with calculating rates of change, often with very few observations to support the calculations. In many cases, all we have are two measurements of area or population from several years apart. In this section we will cover some basic strategies for making estimates of change over time.
 
@@ -542,36 +543,30 @@ In the Red List of Ecosystems, two methods are suggested to determine the rate o
 
 The annual rate of change (ARC) uses a compound interest law to determine the instantaneous rate of change ([Puyravaud 2003](https://www.sciencedirect.com/science/article/pii/S0378112702003353)).
 
-To estimate the rate of changing using these methods, we use the `getDeclineStats` function.
+To estimate the rate of changing using these methods and extrapolate them to a given time frame in one step, we can use the `declineForecast()` function.
 
-```{r Using getDeclineStats}
-decline.stats <- getDeclineStats(a.2000$area, a.2017$area, 2000, 2017, 
-                                 methods = c('ARD', 'PRD', 'ARC'))
-decline.stats
-```
+```{r Using declineForecast}
 
-Extrapolate to appropriate time frame.
+# Input your two spatial datasets
+# t1 = the year of the first dataset
+# year_diff = years between the two datasets
+# forecast_year = desired year to which to forecast decline. Defaults to t1 + 50y.
 
-```{r Estimating future area}
-extrapolated.area <- extrapolateEstimate(a.2000$area, year.t1 = 2000, 
-                                        ARD = decline.stats$ARD, 
-                                        PRD = decline.stats$PRD, 
-                                        ARC = decline.stats$ARC, 
-                                        nYears = 50)
-extrapolated.area
+df <- declineForecast(mangrove.2000, mangrove.2017, t1 = 2000, year_diff = 17, forecast_year = 2050)
 
+print(df)
 ```
 
 ### Exercises:
 
-1.  Repeat the calculations of area/rates of change on an example polygon dataset.
+1.  Repeat the calculations of area change on a polygon dataset
 
     ```{r}
 
     #your code here
     ```
 
-2.  Extrapolate -- are three decline modes in agreement?
+2.  Generate forecasts -- are three decline modes in agreement?
 
     ```{r}
 
@@ -592,7 +587,7 @@ extrapolated.area
     #your code here
     ```
 
-## Whats's next?
+## Whats's next? (to be continued)
 
 **I have a time series (3 or more measurements)**
 
