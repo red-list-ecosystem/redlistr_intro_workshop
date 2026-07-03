@@ -71,9 +71,9 @@ install.packages(c(
   ))
 
 ### before package is loaded to CRAN: 
-install.packages("remotes")
-remotes::install_github("red-list-ecosystem/redlistr", force = TRUE)
-# if at this point you are prompted to update packages, enter 1 to update ALL and click "yes" in the popup window.
+install.packages("pak")
+pak::pak("red-list-ecosystem/redlistr")
+
 ```
 
 #### Load Packages
@@ -559,14 +559,22 @@ print(df)
 
 ### Exercises:
 
-1.  Repeat the calculations of area change on a polygon dataset
+1.  Repeat the calculations of area change on an example polygon dataset. Remember to specify the column containing ecosystem/species identifiers, if there are multiple in the data.
 
     ```{r}
+    # These are some simulated datasets included in the package
+    # Assume that pol1 is from time 1 = 2012 and pol2 is from time 2 = 2020. 
+
+    pol1 <- system.file("extdata", package = "redlistr") |> 
+      st_read("example_polygons")
+    pol2 <- system.file("extdata", package = "redlistr") |> 
+      st_read("example_polygons_t5")
+
 
     #your code here
     ```
 
-2.  Generate forecasts -- are three decline modes in agreement?
+2.  Extrapolate 50 years -- are three decline models in agreement for ecosystem with value = 8?
 
     ```{r}
 

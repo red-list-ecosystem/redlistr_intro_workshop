@@ -135,18 +135,28 @@ plot(AOO.drop5)
 
 ### Exercises Lesson 4:
 
-1.  Repeat the calculations of area/rates of change on a polygon dataset.
+1.  Repeat the calculations of area change on an example polygon dataset. Remember to specify the column containing ecosystem/species identifiers, if there are multiple in the data.
 
     ```{r}
 
-    #your code here
+    # These are some simulated datasets included in the package
+
+    pol1 <- system.file("extdata", package = "redlistr") |> 
+      st_read("example_polygons")
+    pol2 <- system.file("extdata", package = "redlistr") |> 
+      st_read("example_polygons_t5")
+
+    getAreaChange(pol1, pol2, names_from_x = "time1", names_from_y = "time5")
+
     ```
 
-2.  Extrapolate -- are three decline models in agreement?
+2.  Extrapolate 50 years -- are three decline models in agreement for ecosystem with value = 8?
 
     ```{r}
+    # Assume that pol1 is from time 1 = 2012 and pol2 is from time 2 = 2020. 
+    declineForecast(pol1, pol2, names_from_x = "time1", names_from_y = "time5",
+                    t1 = 2012, year_diff = 8, forecast_year = 2062)
 
-    #your code here
     ```
 
 3.  Calculate the estimated rate of change in the population of XXX using PRD and extrapolate to XX years.
