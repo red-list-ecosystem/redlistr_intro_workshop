@@ -70,9 +70,12 @@ install.packages(c(
   "leaflet"         # interactive maps
   ))
 
-### before package is loaded to CRAN: 
-install.packages("pak")
-pak::pak("red-list-ecosystem/redlistr")
+# Install redlistr 2.1.0 from CRAN:
+install.packages("redlistr")
+
+# OR, if you wish to install the development version from GitHub:
+ #install.packages("pak")
+ #pak::pak("red-list-ecosystem/redlistr")
 
 ```
 
@@ -160,8 +163,7 @@ ncol(plant_species)   # 7 columns (lon & lat merged into geometry)
 names(plant_species)  # geometry column replaces lon + lat
 ```
 
-**Spatial CSVs**
-If you have a point dataset that is already in a spatial format, use `sf::st_read()` to import the dataset into R. The function requires two arguments, the path to the directory containing the file (dsn), and the name of the file with no extension (layer). This is because spatial data can consist of multiple files with the same name but different extensions.  
+**Spatial CSVs** If you have a point dataset that is already in a spatial format, use `sf::st_read()` to import the dataset into R. The function requires two arguments, the path to the directory containing the file (dsn), and the name of the file with no extension (layer). This is because spatial data can consist of multiple files with the same name but different extensions.
 
 ##### !!! For Alternative formats
 
@@ -469,9 +471,7 @@ map(plant_species_AOO, plot)
 
 ```
 
-**Important note**
-AOOgrid and EOO objects that are output by the `getEOO` and `getAOO` functions may encounter problems if saved to file and re-imported into R. This is because they contain pointers to the input data (for plotting purposes) that will not survive the saving and re-importing process. 
-The best method is to re-generate AOOgrid and EOO objects in the R session. For those working with large datasets where this would be too time-consuming, a workaround is to re-attach the pointer to the input slot after importing from file. The redlistr team are working on user-friendly solutions to this issue. 
+**Important note** AOOgrid and EOO objects that are output by the `getEOO` and `getAOO` functions may encounter problems if saved to file and re-imported into R. This is because they contain pointers to the input data (for plotting purposes) that will not survive the saving and re-importing process. The best method is to re-generate AOOgrid and EOO objects in the R session. For those working with large datasets where this would be too time-consuming, a workaround is to re-attach the pointer to the input slot after importing from file. The redlistr team are working on user-friendly solutions to this issue.
 
 ### Exercises:
 
