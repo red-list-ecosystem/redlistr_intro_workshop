@@ -66,10 +66,8 @@ redlistr_intro_workshop/
 │   │   └── (spatial files)
 │   └── Plant_species_points.csv  ← species point occurrences
 ├── Exercises/
-│   ├── Exercises_part1.qmd     ← Lessons 1–2 exercises
-│   ├── Exercises_part2.qmd     ← Lessons 3–4 exercises
-│   ├── Exercises_part1_ANSWERS.qmd
-│   └── Exercises_part2_ANSWERS.qmd
+│   ├── Exercises.qmd     ← Lessons 1–4 exercises
+│   └── Exercises_ANSWERS.qmd
 ├── redlistr_intro_workshop.Rproj  ← open this in RStudio
 └── README.md
 ```
@@ -116,7 +114,7 @@ AOO is the number of **2 km × 2 km grid cells** occupied by the ecosystem or sp
 `{redlistr}` accepts three spatial formats. Use whichever matches your data source.
 
 | Format | Class | Typical Source | Read with |
-|-----------------|-----------------|---------------------|-----------------|
+|-----------------|-----------------|--------------------|-----------------|
 | **Raster** (GeoTIFF, etc.) | `SpatRaster` (terra) | Remote sensing, ALA gridded layers | `terra::rast()` |
 | **Polygon** (Shapefile, GeoPackage) | `sf` | TERN, state agency shapefiles | `sf::st_read()` |
 | **Points** (CSV with lat/lon) | `sf` (after conversion) | ALA species records, GBIF | `read.csv()` + `st_as_sf()` |
@@ -136,7 +134,7 @@ AOO is the number of **2 km × 2 km grid cells** occupied by the ecosystem or sp
 ## Common Errors & Fixes
 
 | Error message | Cause | Fix |
-|-------------------------------------|------------------|-----------------|
+|------------------------------------|------------------|------------------|
 | `Input raster has a longitude/latitude CRS` | Data is in degrees (EPSG:4326) | `project(r, "EPSG:32755")` for rasters; `st_transform(v, 32755)` for vectors |
 |  |  |  |
 |  |  |  |
